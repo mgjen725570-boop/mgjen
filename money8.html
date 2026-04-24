@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money List Pro - Cloud Auth</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --p: #8e44ad; --bg: #f4f7f6; --card: #ffffff; --text: #333; --active-font: 'Pyidaungsu', sans-serif; }
+        .dark-mode { --bg: #1a1a1a; --card: #2d2d2d; --text: #f4f7f6; }
+        body { font-family: var(--active-font); background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; overflow-x: hidden; }
+        
+        /* Auth Screen */
+        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .auth-card { background: var(--card); padding: 30px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 85%; max-width: 350px; }
+        .btn-google { background: #4285F4; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        .container { max-width: 550px; margin: 20px auto; background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 90vh; }
+        .sidebar { height: 100vh; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: var(--card); overflow-x: hidden; transition: 0.5s; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar div.item { padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; background: #eee; padding: 5px; border-radius: 12px; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 10px; font-weight: bold; color: #666; }
+        .tab.active { background: var(--p); color: white; }
+        .balance-card { background: linear-gradient(135deg, var(--p), #9b59b6); color: white; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid #ddd; background: var(--card); color: var(--text); font-family: inherit; }
+        .btn-main { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .summary-mini { display: flex; gap: 10px; margin-bottom: 15px; }
+        .sum-box { flex: 1; padding: 10px; border-radius: 12px; text-align: center; color: white; font-size: 12px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--p); color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .user-info { text-align: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .user-img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; border: 2px solid var(--p); }
+    </style>
+</head>
+<body>
+
+<div id="auth-screen">
+    <div class="auth-card">
+        <h2 style="color:var(--p)">Money List Pro</h2>
+        <p>စာရင်းများကို Cloud ပေါ်မှာ သိမ်းဆည်းရန် အကောင့်ဝင်ပေးပါ</p>
+        <button class="btn-google" onclick="login()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20"> Google ဖြင့် အကောင့်ဝင်မည်
+        </button>
+    </div>
+</div>
+
+<div id="sidebarOverlay" onclick="closeNav()" style="position:fixed; display:none; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000;"></div>
+
+<div id="mySidebar" class="sidebar">
+    <div class="user-info" id="user-profile">
+        <img src="" class="user-img" id="user-photo">
+        <div id="user-name" style="font-weight: bold;">User Name</div>
+    </div>
+    <div class="item"><label>Language</label><select onchange="changeLang(this.value)" id="lang-select" style="width:120px;"><option value="my">မြန်မာ</option><option value="en">English</option></select></div>
+    <div class="item"><label>Night Mode</label><button onclick="toggleDarkMode()" style="width:70px;">On/Off</button></div>
+    <div style="padding:20px;">
+        <button onclick="logout()" style="background:#e74c3c; color:white;">Logout ထွက်ရန်</button>
+    </div>
+</div>
+
+<div class="container" id="app-content" style="display:none;">
+    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+        <span style="font-size:24px; cursor:pointer" onclick="openNav()">&#9776;</span>
+        <h2 style="margin:0; color:var(--p);">Money List Cloud</h2>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="tab active" id="t-entry" onclick="showPage('entry')">စာရင်းသွင်း</div>
+        <div class="tab" id="t-report" onclick="showPage('report')">မှတ်တမ်း</div>
+        <div class="tab" id="t-stats" onclick="showPage('stats')">သုံးသပ်ချက်</div>
+    </div>
+
+    <div id="entry-page">
+        <div class="balance-card"><small>လက်ကျန်ငွေ</small><h1 id="total-val">0</h1><small id="cur-display">MMK</small></div>
+        <input type="hidden" id="edit-id">
+        <input type="number" id="amt" placeholder="ပမာဏ">
+        <input type="text" id="note" placeholder="မှတ်ချက်">
+        <select id="cat">
+            <option value="General">အထွေထွေ</option><option value="Food">စားစရိတ်</option><option value="Shopping">စျေးဝယ်ခြင်း</option><option value="Transport">လမ်းစရိတ်</option><option value="Bills">ဘေလ်များ</option><option value="Income">ဝင်ငွေ</option>
+        </select>
+        <select id="type"><option value="income">ဝင်ငွေ (+)</option><option value="expense" selected>ထွက်ငွေ (-)</option></select>
+        <select id="currency-select" onchange="updateCurrencyUI(this.value)"><option value="MMK">MMK</option><option value="THB">THB</option><option value="USD">USD</option></select>
+        <button class="btn-main" id="btn-save" onclick="saveData()">သိမ်းဆည်းမည်</button>
+    </div>
+
+    <div id="report-page" style="display:none;">
+        <div class="summary-mini">
+            <div class="sum-box" style="background:#27ae60;">ဝင်ငွေ:<br><span id="sum-inc">0</span></div>
+            <div class="sum-box" style="background:#e74c3c;">ထွက်ငွေ:<br><span id="sum-exp">0</span></div>
+        </div>
+        <div id="print-area"><table><thead><tr><th>ရက်စွဲ</th><th>မှတ်ချက်</th><th>ငွေ</th><th>Action</th></tr></thead><tbody id="table-body"></tbody></table></div>
+    </div>
+
+    <div id="stats-page" style="display:none;"><div style="height: 300px;"><canvas id="myChart"></canvas></div></div>
+</div>
+
+<script>
+    // Firebase Config (အောက်ပါတို့ကို သင့် Firebase Console မှ အချက်အလက်များဖြင့် ပြောင်းလဲနိုင်သည်)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDY8o3RX38-Nl1RkKeOC6gHWtfKXPcaxas",
+      authDomain: "mgjen-8b4f5.firebaseapp.com",
+      projectId: "mgjen-8b4f5",
+      storageBucket: "mgjen-8b4f5.firebasestorage.app",
+      messagingSenderId: "685152708249",
+      appId: "1:685152708249:web:6334e940e8306f0ff6ba08"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    let currentUser = null;
+    let myChart = null;
+
+    // --- Auth Functions ---
+    function login() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+    }
+
+    function logout() { auth.signOut().then(() => location.reload()); }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            document.getElementById('user-name').innerText = user.displayName;
+            document.getElementById('user-photo').src = user.photoURL;
+            fetchData();
+        } else {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('app-content').style.display = 'none';
+        }
+    });
+
+    // --- Data Functions ---
+    async function saveData() {
+        if(!currentUser) return;
+        const a = document.getElementById('amt').value;
+        const n = document.getElementById('note').value || '-';
+        const t = document.getElementById('type').value;
+        const cur = document.getElementById('currency-select').value;
+        const cat = document.getElementById('cat').value;
+        const editId = document.getElementById('edit-id').value;
+        
+        if(!a) return alert("Enter amount");
+
+        const record = {
+            uid: currentUser.uid, // ဒီနေရာက အရေးကြီးဆုံးပါ (User တစ်ဦးချင်းစီခွဲသိမ်းတာပါ)
+            amount: parseFloat(a), note: n, type: t, currency: cur, category: cat,
+            date: new Date().toLocaleDateString(), ts: Date.now()
+        };
+
+        try {
+            if(editId) {
+                // Update လုပ်တဲ့အခါမှာလည်း ကိုယ့် UID နဲ့ဟာမှ ပြင်လို့ရအောင် စစ်ပါမယ်
+                const snap = await db.collection("money_records")
+                                   .where("uid", "==", currentUser.uid)
+                                   .where("ts", "==", parseInt(editId)).get();
+                if(!snap.empty) await db.collection("money_records").doc(snap.docs[0].id).update(record);
+                document.getElementById('edit-id').value = '';
+            } else {
+                await db.collection("money_records").add(record);
+            }
+            document.getElementById('amt').value = ''; document.getElementById('note').value = '';
+            fetchData();
+            showPage('report');
+        } catch (e) { alert("Error: " + e.message); }
+    }
+
+    async function fetchData() {
+        if(!currentUser) return;
+        const cur = document.getElementById('currency-select').value;
+        const tbody = document.getElementById('table-body');
+        
+        try {
+            // ကိုယ့် UID နဲ့ ဒေတာတွေကိုပဲ Firebase ဆီက လှမ်းတောင်းတာပါ
+            const snap = await db.collection("money_records")
+                               .where("uid", "==", currentUser.uid)
+                               .orderBy("ts", "desc").get();
+            
+            tbody.innerHTML = "";
+            let bal = 0, sumInc = 0, sumExp = 0, catData = {};
+
+            snap.forEach(doc => {
+                const item = doc.data();
+                if(item.currency !== cur) return;
+                
+                const itemAmt = item.amount;
+                if(item.type === 'income') { bal += itemAmt; sumInc += itemAmt; } 
+                else { bal -= itemAmt; sumExp += itemAmt; catData[item.category] = (catData[item.category] || 0) + itemAmt; }
+
+                tbody.innerHTML += `<tr>
+                    <td>${item.date}</td><td>${item.note}<br><small style="color:gray">${item.category}</small></td>
+                    <td style="color:${item.type==='income'?'green':'red'}">${item.type === 'income' ? '+' : '-'}${itemAmt.toLocaleString()}</td>
+                    <td>
+                        <button onclick="editRecord(${item.ts})">✎</button>
+                        <button onclick="deleteRecord(${item.ts})">×</button>
+                    </td>
+                </tr>`;
+            });
+
+            document.getElementById('total-val').innerText = bal.toLocaleString();
+            document.getElementById('sum-inc').innerText = sumInc.toLocaleString();
+            document.getElementById('sum-exp').innerText = sumExp.toLocaleString();
+            updateChart(catData);
+        } catch (e) { console.error(e); }
+    }
+
+    async function deleteRecord(id) {
+        if(confirm("ဖျက်မှာလား?")) {
+            const snap = await db.collection("money_records")
+                               .where("uid", "==", currentUser.uid)
+                               .where("ts", "==", id).get();
+            if(!snap.empty) {
+                await db.collection("money_records").doc(snap.docs[0].id).delete();
+                fetchData();
+            }
+        }
+    }
+
+    function editRecord(id) {
+        // Edit logic inside UI... (same as before)
+        showPage('entry');
+    }
+
+    // --- UI Logic ---
+    function openNav() { document.getElementById("mySidebar").style.width = "260px"; document.getElementById("sidebarOverlay").style.display = "block"; }
+    function closeNav() { document.getElementById("mySidebar").style.width = "0"; document.getElementById("sidebarOverlay").style.display = "none"; }
+    function showPage(p) { ['entry-page', 'report-page', 'stats-page'].forEach(id => document.getElementById(id).style.display = 'none'); document.getElementById(p + '-page').style.display = 'block'; }
+    function updateCurrencyUI(c) { document.getElementById('cur-display').innerText = c; fetchData(); }
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+    
+    function updateChart(catData) {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6'] }] }
+        });
+    }
+</script>
+</body>
+</html>

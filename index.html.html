@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money List Ultimate Pro v1.7.0</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* မူရင်းဒီဇိုင်းကို အပြည့်အဝ ထိန်းသိမ်းထားပါသည် */
+        :root { --p: #8e44ad; --bg: #f4f7f6; --card: #ffffff; --text: #333; --active-font: 'Pyidaungsu', sans-serif; }
+        .dark-mode { --bg: #1a1a1a; --card: #2d2d2d; --text: #f4f7f6; }
+        body { font-family: var(--active-font); background: var(--bg); color: var(--text); margin: 0; transition: 0.3s; overflow-x: hidden; }
+        .container { max-width: 550px; margin: 20px auto; background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 90vh; }
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--p); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #lock-input { width: 150px; text-align: center; font-size: 24px; letter-spacing: 10px; border: none; border-bottom: 2px solid white; background: none; color: white; margin-bottom: 20px; }
+        .sidebar { height: 100vh; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background: var(--card); overflow-x: hidden; transition: 0.5s; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar div.item { padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; background: #eee; padding: 5px; border-radius: 12px; }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 10px; font-weight: bold; color: #666; }
+        .tab.active { background: var(--p); color: white; }
+        .balance-card { background: linear-gradient(135deg, var(--p), #9b59b6); color: white; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid #ddd; background: var(--card); color: var(--text); font-family: inherit; }
+        .btn-main { background: var(--p); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .summary-mini { display: flex; gap: 10px; margin-bottom: 15px; }
+        .sum-box { flex: 1; padding: 10px; border-radius: 12px; text-align: center; color: white; font-size: 12px; font-weight: bold; }
+        .filter-buttons { display: flex; gap: 5px; margin-bottom: 10px; }
+        .filter-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 11px; }
+        .filter-btn.active { background: var(--p); color: white; border-color: var(--p); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: var(--p); color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        #print-settings { background: #eee; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: none; }
+        .dark-mode #print-settings { background: #333; }
+        @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { position: absolute; left: 0; top: 0; width: 100%; } .no-print { display: none !important; } }
+        #about-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; z-index: 1002; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body onload="initApp()">
+
+<div id="lock-screen">
+    <h2 id="l-locked">Money List Locked</h2>
+    <input type="password" id="lock-input" maxlength="4" oninput="checkPasscode(this.value)" placeholder="PIN">
+</div>
+
+<div id="sidebarOverlay" onclick="closeNav()" style="position:fixed; display:none; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000;"></div>
+
+<div id="mySidebar" class="sidebar">
+    <div style="padding:20px; text-align:center; border-bottom:1px solid #eee;"><h3 style="color:var(--p)">Settings</h3></div>
+    <div class="item"><label>Language</label><select onchange="changeLang(this.value)" id="lang-select" style="width:120px;"><option value="my">မြန်မာ</option><option value="en">English</option></select></div>
+    <div class="item"><label>Night Mode</label><button onclick="toggleDarkMode()" style="width:70px;">On/Off</button></div>
+    <div class="item"><label>Security PIN</label><input type="password" id="set-pin" maxlength="4" style="width:60px;" onchange="updatePin(this.value)"></div>
+    <div class="item" onclick="showAbout()" style="cursor:pointer; color:var(--p); font-weight:bold;"><label>About Software</label>ℹ️</div>
+    <div style="padding:20px;"><button onclick="resetAllData()" style="background:#e74c3c; color:white;">Clear All Data</button></div>
+</div>
+
+<div class="container">
+    <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+        <span style="font-size:24px; cursor:pointer" onclick="openNav()">&#9776;</span>
+        <h2 style="margin:0; color:var(--p);">Money List Pro</h2>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="tab active" id="t-entry" onclick="showPage('entry')">စာရင်းသွင်း</div>
+        <div class="tab" id="t-report" onclick="showPage('report')">မှတ်တမ်း</div>
+        <div class="tab" id="t-stats" onclick="showPage('stats')">သုံးသပ်ချက်</div>
+    </div>
+
+    <div id="entry-page">
+        <div class="balance-card"><small id="l-bal">လက်ကျန်ငွေ (Current Balance)</small><h1 id="total-val">0</h1><small id="cur-display">MMK</small></div>
+        <input type="hidden" id="edit-id"><input type="number" id="amt" placeholder="ပမာဏ (Amount)"><input type="text" id="note" placeholder="မှတ်ချက် (Note)">
+        <select id="cat">
+            <option value="General">အထွေထွေ (General)</option><option value="Food">စားစရိတ် (Food/Drinks)</option><option value="Shopping">စျေးဝယ်ခြင်း (Shopping)</option><option value="Transport">လမ်းစရိတ် (Transport)</option><option value="Bills">ဘေလ်ဆောင်ခြင်း (Bills)</option><option value="Health">ကျန်းမာရေး (Health)</option><option value="Education">ပညာရေး (Education)</option><option value="Income">လစာ/ဝင်ငွေ (Salary/Income)</option>
+        </select>
+        <select id="type"><option value="income">ဝင်ငွေ (+)</option><option value="expense" selected>ထွက်ငွေ (-)</option></select>
+        <select id="currency-select" onchange="updateCurrencyUI(this.value)"><option value="MMK">MMK (K)</option><option value="THB">THB (฿)</option><option value="USD">USD ($)</option></select>
+        <button class="btn-main" id="btn-save" onclick="saveData()">သိမ်းဆည်းမည်</button>
+    </div>
+
+    <div id="report-page" style="display:none;">
+        <div class="summary-mini">
+            <div class="sum-box" style="background:#27ae60;">ဝင်ငွေ:<br><span id="sum-inc">0</span></div>
+            <div class="sum-box" style="background:#e74c3c;">ထွက်ငွေ:<br><span id="sum-exp">0</span></div>
+            <div class="sum-box" style="background:var(--p);">စုစုပေါင်း:<br><span id="sum-total">0</span></div>
+        </div>
+        <div class="filter-buttons">
+            <button class="filter-btn active" id="f-all" onclick="setFilter('all')">အားလုံး</button>
+            <button class="filter-btn" id="f-income" onclick="setFilter('income')">ဝင်ငွေ</button>
+            <button class="filter-btn" id="f-expense" onclick="setFilter('expense')">ထွက်ငွေ</button>
+        </div>
+        <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <button onclick="togglePrintSettings()" style="background:#3498db; color:white; border:none; padding:8px; border-radius:8px; flex:1;">Print စနစ်</button>
+            <button onclick="exportToExcel()" style="background:#27ae60; color:white; border:none; padding:8px; border-radius:8px; flex:1;">Excel</button>
+        </div>
+        <div id="print-settings">
+            <label>Paper Size:</label><select id="paper-size"><option value="A4">A4</option><option value="A5">A5</option></select>
+            <button onclick="startPrint()" class="btn-main">Print Now</button>
+        </div>
+        <div id="print-area"><table><thead><tr><th>ရက်စွဲ</th><th>မှတ်ချက်</th><th>ငွေ</th><th class="no-print">Action</th></tr></thead><tbody id="table-body"></tbody></table></div>
+    </div>
+
+    <div id="stats-page" style="display:none;"><h4 style="text-align:center;">အသုံးစရိတ် ခွဲခြမ်းစိတ်ဖြာမှု</h4><div style="height: 300px;"><canvas id="myChart"></canvas></div></div>
+</div>
+
+<div id="about-modal">
+    <h3 style="color:var(--p);">About Money List</h3>
+    <p>မဂ်လာပါ ဒီဆော့ဝဲလ်လေးကိုဖန်တီးရခြင်းက ငွေကိုစည်းကမ်းတကျကိုင်တွယ်အသုံးပြု့နိုင်ဖို့ရည်ရွယ်ပါတယ်။</p>
+    <p><b>Developer:</b> MgJen</p>
+    <button onclick="closeAbout()" class="btn-main">ပိတ်မည်</button>
+</div>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDY8o3RX38-Nl1RkKeOC6gHWtfKXPcaxas",
+      authDomain: "mgjen-8b4f5.firebaseapp.com",
+      projectId: "mgjen-8b4f5",
+      storageBucket: "mgjen-8b4f5.firebasestorage.app",
+      messagingSenderId: "685152708249",
+      appId: "1:685152708249:web:6334e940e8306f0ff6ba08"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let myChart = null;
+    let currentFilter = 'all';
+    let lang = 'my';
+    const fonts = { my: "'Pyidaungsu', sans-serif", en: "'Segoe UI', sans-serif" };
+
+    function initApp() {
+        if (!localStorage.getItem('app_pin')) localStorage.setItem('app_pin', "1234");
+        document.getElementById('set-pin').value = localStorage.getItem('app_pin');
+        fetchData();
+    }
+
+    function checkPasscode(v) { if(v === localStorage.getItem('app_pin')) document.getElementById('lock-screen').style.display = 'none'; }
+    function updatePin(v) { if(v.length === 4) { localStorage.setItem('app_pin', v); alert("PIN Updated!"); } }
+    function changeLang(l) { lang = l; document.documentElement.style.setProperty('--active-font', fonts[l]); const isMy = l === 'my'; document.getElementById('t-entry').innerText = isMy ? "စာရင်းသွင်း" : "Entry"; document.getElementById('t-report').innerText = isMy ? "မှတ်တမ်း" : "Report"; document.getElementById('t-stats').innerText = isMy ? "သုံးသပ်ချက်" : "Stats"; }
+    function openNav() { document.getElementById("mySidebar").style.width = "260px"; document.getElementById("sidebarOverlay").style.display = "block"; }
+    function closeNav() { document.getElementById("mySidebar").style.width = "0"; document.getElementById("sidebarOverlay").style.display = "none"; }
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+    function showAbout() { document.getElementById('about-modal').style.display = 'block'; }
+    function closeAbout() { document.getElementById('about-modal').style.display = 'none'; closeNav(); }
+    function updateCurrencyUI(c) { document.getElementById('cur-display').innerText = c; fetchData(); }
+
+    function setFilter(f) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('f-' + f).classList.add('active');
+        fetchData();
+    }
+
+    // Firebase saveData Function
+    async function saveData() {
+        const a = document.getElementById('amt').value;
+        const n = document.getElementById('note').value || '-';
+        const t = document.getElementById('type').value;
+        const cur = document.getElementById('currency-select').value;
+        const cat = document.getElementById('cat').value;
+        const editId = document.getElementById('edit-id').value;
+        if(!a) return alert("Enter amount");
+
+        const record = {
+            amount: parseFloat(a), note: n, type: t, currency: cur, category: cat,
+            date: new Date().toLocaleDateString(), ts: Date.now()
+        };
+
+        try {
+            if(editId) {
+                const snap = await db.collection("money_records").where("ts", "==", parseInt(editId)).get();
+                if(!snap.empty) await db.collection("money_records").doc(snap.docs[0].id).update(record);
+                document.getElementById('edit-id').value = '';
+                document.getElementById('btn-save').innerText = lang === 'my' ? "သိမ်းဆည်းမည်" : "Save";
+            } else {
+                await db.collection("money_records").add(record);
+            }
+            document.getElementById('amt').value = ''; document.getElementById('note').value = '';
+            fetchData();
+            showPage('report');
+        } catch (e) { alert("Firebase Error: " + e.message); }
+    }
+
+    // Firebase fetchData Function
+    async function fetchData() {
+        const cur = document.getElementById('currency-select').value;
+        const tbody = document.getElementById('table-body');
+        
+        try {
+            const snap = await db.collection("money_records").orderBy("ts", "desc").get();
+            tbody.innerHTML = "";
+            let bal = 0, sumInc = 0, sumExp = 0, catData = {};
+
+            snap.forEach(doc => {
+                const item = doc.data();
+                if(item.currency !== cur) return;
+                
+                const itemAmt = item.amount;
+                if(item.type === 'income') { bal += itemAmt; sumInc += itemAmt; } 
+                else { bal -= itemAmt; sumExp += itemAmt; catData[item.category] = (catData[item.category] || 0) + itemAmt; }
+
+                if(currentFilter !== 'all' && item.type !== currentFilter) return;
+
+                tbody.innerHTML += `<tr>
+                    <td>${item.date}</td><td>${item.note}<br><small style="color:gray">${item.category}</small></td>
+                    <td style="color:${item.type==='income'?'#27ae60':'#e74c3c'}">${item.type === 'income' ? '+' : '-'}${itemAmt.toLocaleString()}</td>
+                    <td class="no-print">
+                        <button style="width:30px; padding:5px; background:orange; color:white; border:none; border-radius:5px;" onclick="editRecord(${item.ts})">✎</button>
+                        <button style="width:30px; padding:5px; background:red; color:white; border:none; border-radius:5px;" onclick="deleteRecord(${item.ts})">×</button>
+                    </td>
+                </tr>`;
+            });
+
+            document.getElementById('total-val').innerText = bal.toLocaleString();
+            document.getElementById('sum-inc').innerText = sumInc.toLocaleString();
+            document.getElementById('sum-exp').innerText = sumExp.toLocaleString();
+            document.getElementById('sum-total').innerText = bal.toLocaleString();
+            updateChart(catData);
+        } catch (e) { console.error(e); }
+    }
+
+    async function editRecord(id) {
+        const snap = await db.collection("money_records").where("ts", "==", id).get();
+        if(!snap.empty) {
+            const item = snap.docs[0].data();
+            document.getElementById('amt').value = item.amount;
+            document.getElementById('note').value = item.note;
+            document.getElementById('type').value = item.type;
+            document.getElementById('cat').value = item.category;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('btn-save').innerText = lang === 'my' ? "ပြင်ဆင်မည်" : "Update";
+            showPage('entry');
+        }
+    }
+
+    async function deleteRecord(id) {
+        if(confirm("Delete this record?")) {
+            const snap = await db.collection("money_records").where("ts", "==", id).get();
+            if(!snap.empty) {
+                await db.collection("money_records").doc(snap.docs[0].id).delete();
+                fetchData();
+            }
+        }
+    }
+
+    function updateChart(catData) {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        if(Object.keys(catData).length === 0) return;
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    function showPage(p) { ['entry-page', 'report-page', 'stats-page'].forEach(id => document.getElementById(id).style.display = 'none'); document.getElementById(p + '-page').style.display = 'block'; document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.getElementById('t-' + p).classList.add('active'); }
+    function togglePrintSettings() { const s = document.getElementById('print-settings'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; }
+    function startPrint() { const size = document.getElementById('paper-size').value; const style = document.createElement('style'); style.innerHTML = `@page { size: ${size}; margin: 15mm; }`; document.head.appendChild(style); window.print(); }
+    
+    async function exportToExcel() {
+        const snap = await db.collection("money_records").get();
+        const records = snap.docs.map(doc => doc.data());
+        const ws = XLSX.utils.json_to_sheet(records);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Records");
+        XLSX.writeFile(wb, "Money_List_Pro_Cloud.xlsx");
+    }
+
+    async function resetAllData() {
+        if(confirm("Clear all cloud records permanently?")) {
+            const snap = await db.collection("money_records").get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            location.reload();
+        }
+    }
+</script>
+</body>
+</html>

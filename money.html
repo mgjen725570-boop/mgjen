@@ -23,16 +23,16 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; }
         input:focus { border-color: var(--accent); }
 
-        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 12px; margin: 15px 0; }
+        /* အလယ်မှာ တစ်နေ့လုပ်အားခပြရန် grid ကို ၃ ကွက်ပြောင်းလိုက်သည် */
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 12px; margin: 15px 0; }
         .analysis-item { text-align: center; }
         .analysis-item span { display: block; font-size: 11px; color: #888; }
-        .analysis-item b { font-size: 15px; color: var(--primary); }
+        .analysis-item b { font-size: 14px; color: var(--primary); }
 
         .net-pay-box { background: var(--accent); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .net-pay-box h1 { margin: 5px 0; font-size: 28px; }
 
         .btn-save { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold; }
-        .history-item { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
@@ -46,44 +46,49 @@
 <div class="payroll-card">
     <h2 id="t-title">Payroll System Pro</h2>
     
-    <div class="input-group">
-        <label id="t-curr-label">ငွေကြေးအမျိုးအစား</label>
-        <select id="currency" onchange="doCalc()">
-            <option value="THB">Thai Baht (฿)</option>
-            <option value="MMK">Myanmar Kyat (Ks)</option>
-        </select>
-    </div>
-
-    <div class="input-group">
-        <label id="t-type-label">ဝန်ထမ်းအမျိုးအစား</label>
-        <select id="empType" onchange="toggleInputs(); doCalc();">
-            <option value="monthly" id="t-opt-monthly">လခစား (Monthly)</option>
-            <option value="daily" id="t-opt-daily">နေ့စား (Daily)</option>
-        </select>
+    <div style="display: flex; gap: 10px;">
+        <div class="input-group" style="flex: 1;">
+            <label id="t-curr-label">ငွေကြေး</label>
+            <select id="currency" onchange="doCalc()">
+                <option value="THB">Thai Baht (฿)</option>
+                <option value="MMK">Myanmar Kyat (Ks)</option>
+            </select>
+        </div>
+        <div class="input-group" style="flex: 1;">
+            <label id="t-type-label">ဝန်ထမ်းအမျိုးအစား</label>
+            <select id="empType" onchange="toggleInputs(); doCalc();">
+                <option value="monthly" id="t-opt-monthly">လခစား</option>
+                <option value="daily" id="t-opt-daily">နေ့စား</option>
+            </select>
+        </div>
     </div>
 
     <div class="input-group" id="monthlySalaryInput">
         <label id="t-salary-label">အခြေခံလစာ</label>
-        <input type="number" id="salary" oninput="doCalc()">
+        <input type="number" id="salary" placeholder="လစာရိုက်ပါ" oninput="doCalc()">
     </div>
 
     <div class="input-group" id="dailyRateInput" style="display:none;">
         <label id="t-daily-label">တစ်ရက်နေ့စားခ</label>
-        <input type="number" id="manualDailyRate" oninput="doCalc()">
+        <input type="number" id="manualDailyRate" placeholder="နေ့စားခရိုက်ပါ" oninput="doCalc()">
     </div>
 
     <div style="display: flex; gap: 10px;">
         <div class="input-group" style="flex: 1;">
-            <label id="t-days-label">အလုပ်လုပ်ရက် (နေ့တစ်ပိုင်းရသည်)</label>
-            <input type="number" id="days" value="26" step="0.5" placeholder="ဥပမာ 26.5" oninput="doCalc()">
+            <label id="t-days-label">အလုပ်လုပ်ရက်</label>
+            <input type="number" id="days" value="26" step="0.5" oninput="doCalc()">
         </div>
+        <div class="input-group" style="flex: 1;">
+            <label id="t-extra-label">အပိုငွေ/ဆုကြေး</label>
+            <input type="number" id="extra" placeholder="အပိုရငွေ" oninput="doCalc()">
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
         <div class="input-group" style="flex: 1;">
             <label id="t-otrate-label">OT ၁ နာရီခ</label>
-            <input type="number" id="otRateInput" oninput="doCalc()">
+            <input type="number" id="otRateInput" placeholder="ဥပမာ ၆၄" oninput="doCalc()">
         </div>
-    </div>
-
-    <div style="display: flex; gap: 10px;">
         <div class="input-group" style="flex: 1.2;">
             <label id="t-ottime-label">OT (နာရီ + မိနစ်)</label>
             <div style="display: flex; gap: 5px;">
@@ -91,20 +96,25 @@
                 <input type="number" id="otMins" placeholder="Min" oninput="doCalc()">
             </div>
         </div>
-        <div class="input-group" style="flex: 0.8;">
-            <label id="t-minus-label">နုတ်ငွေ</label>
-            <input type="number" id="minus" oninput="doCalc()">
-        </div>
+    </div>
+
+    <div class="input-group">
+        <label id="t-minus-label">နုတ်ငွေ (ဥပမာ-ပတ်ကန်ဆန်ခွန်)</label>
+        <input type="number" id="minus" placeholder="နှုတ်ရမည့်ပမာဏ" oninput="doCalc()">
     </div>
 
     <div class="analysis-grid">
         <div class="analysis-item">
-            <span id="t-drate-show">နေ့စားခနှုန်းထား</span>
+            <span id="t-drate-show">တစ်နေ့လုပ်အားခ</span>
             <b id="dRate">0</b>
         </div>
         <div class="analysis-item">
             <span id="t-ottotal-show">OT စုစုပေါင်း</span>
             <b id="otTotal">0</b>
+        </div>
+        <div class="analysis-item">
+            <span id="t-extra-show">အပိုငွေပေါင်း</span>
+            <b id="extraShow">0</b>
         </div>
     </div>
 
@@ -118,9 +128,9 @@
 
 <script>
     const langData = {
-        my: { title: "လစာတွက်စနစ်", curr: "ငွေကြေးအမျိုးအစား", type: "ဝန်ထမ်းအမျိုးအစား", monthly: "လခစား", daily: "နေ့စား", salary: "အခြေခံလစာ", dailyrate: "တစ်ရက်နေ့စားခ", days: "အလုပ်လုပ်ရက်", otrate: "OT ၁ နာရီခ", ottime: "OT (နာရီ + မိနစ်)", minus: "နုတ်ငွေ", drate_sh: "နေ့စားခနှုန်းထား", ot_sh: "OT စုစုပေါင်း", net: "စုစုပေါင်းရရှိငွေ", save: "မှတ်တမ်းသိမ်းမည်" },
-        cn: { title: "工资计算器", curr: "货币类型", type: "员工类型", monthly: "月薪制", daily: "日薪制", salary: "基本工资", dailyrate: "日薪标准", days: "工作天数", otrate: "加班时薪", ottime: "加班 (小时 + 分钟)", minus: "扣除金额", drate_sh: "日薪计算", ot_sh: "加班费总计", net: "实发工资总額", save: "保存记录" },
-        en: { title: "Payroll Pro", curr: "Currency", type: "Employee Type", monthly: "Monthly", daily: "Daily", salary: "Basic Salary", dailyrate: "Daily Rate", days: "Work Days", otrate: "OT Rate/Hr", ottime: "OT (Hr + Min)", minus: "Deduction", drate_sh: "Daily Rate", ot_sh: "Total OT", net: "Net Salary", save: "Save History" }
+        my: { title: "လစာတွက်စနစ်", curr: "ငွေကြေး", type: "အမျိုးအစား", monthly: "လခစား", daily: "နေ့စား", salary: "အခြေခံလစာ", dailyrate: "တစ်ရက်နေ့စားခ", days: "အလုပ်လုပ်ရက်", extra: "အပိုငွေ/ဆုကြေး", otrate: "OT ၁ နာရီခ", ottime: "OT (နာရီ + မိနစ်)", minus: "နုတ်ငွေ", drate_sh: "တစ်နေ့လုပ်အားခ", ot_sh: "OT စုစုပေါင်း", extra_sh: "အပိုငွေပေါင်း", net: "စုစုပေါင်းရရှိငွေ", save: "မှတ်တမ်းသိမ်းမည်" },
+        cn: { title: "工资计算器", curr: "货币", type: "类型", monthly: "月薪制", daily: "日薪制", salary: "基本工资", dailyrate: "日薪标准", days: "工作天数", extra: "奖金/津贴", otrate: "加班时薪", ottime: "加班 (小时+分)", minus: "扣除金额", drate_sh: "日薪计算", ot_sh: "加班费总计", extra_sh: "总奖金", net: "实发工资总額", save: "保存记录" },
+        en: { title: "Payroll Pro", curr: "Currency", type: "Type", monthly: "Monthly", daily: "Daily", salary: "Basic Salary", dailyrate: "Daily Rate", days: "Work Days", extra: "Bonus/Extra", otrate: "OT Rate/Hr", ottime: "OT (Hr + Min)", minus: "Deduction", drate_sh: "Daily Rate", ot_sh: "Total OT", extra_sh: "Total Bonus", net: "Net Salary", save: "Save History" }
     };
 
     function changeLang(lang, btn) {
@@ -135,11 +145,13 @@
         document.getElementById('t-salary-label').innerText = d.salary;
         document.getElementById('t-daily-label').innerText = d.dailyrate;
         document.getElementById('t-days-label').innerText = d.days;
+        document.getElementById('t-extra-label').innerText = d.extra;
         document.getElementById('t-otrate-label').innerText = d.otrate;
         document.getElementById('t-ottime-label').innerText = d.ottime;
         document.getElementById('t-minus-label').innerText = d.minus;
         document.getElementById('t-drate-show').innerText = d.drate_sh;
         document.getElementById('t-ottotal-show').innerText = d.ot_sh;
+        document.getElementById('t-extra-show').innerText = d.extra_sh;
         document.getElementById('t-netpay-label').innerText = d.net;
         document.getElementById('t-btn-save').innerText = d.save;
     }
@@ -155,6 +167,7 @@
         const salary = parseFloat(document.getElementById('salary').value) || 0;
         const manualDaily = parseFloat(document.getElementById('manualDailyRate').value) || 0;
         const days = parseFloat(document.getElementById('days').value) || 0;
+        const extra = parseFloat(document.getElementById('extra').value) || 0;
         const otHours = parseFloat(document.getElementById('otHours').value) || 0;
         const otMins = parseFloat(document.getElementById('otMins').value) || 0;
         const otRateInput = parseFloat(document.getElementById('otRateInput').value) || 0;
@@ -164,17 +177,15 @@
         let basePay = 0;
 
         if (type === 'monthly') {
-            // လခစားအတွက် နေ့စားခကို တစ်လပုံမှန်အလုပ်ရက် (ဥပမာ ၂၆ ရက်) ဖြင့်သာ တည်စားပြီး တွက်ပါမည်
             const standardDays = 26; 
             dailyRate = salary / standardDays;
-            // ရရှိမည့် အခြေခံလစာ = နေ့စားခနှုန်းထား x အလုပ်ဆင်းသည့်ရက် (နေ့တစ်ပိုင်းအပါ)
             basePay = dailyRate * days;
         } else {
-            // နေ့စားအတွက်
             dailyRate = manualDaily;
             basePay = dailyRate * days;
         }
 
+        // တစ်နေ့လုပ်အားခ ပြသခြင်း
         document.getElementById('dRate').innerText = Math.round(dailyRate).toLocaleString();
         
         // OT တွက်ချက်ခြင်း
@@ -182,10 +193,18 @@
         const totalOTPay = totalOTTime * otRateInput;
         document.getElementById('otTotal').innerText = Math.round(totalOTPay).toLocaleString();
 
-        // စုစုပေါင်း
-        const netPay = (basePay + totalOTPay) - minus;
+        // အပိုငွေပြသခြင်း
+        document.getElementById('extraShow').innerText = extra.toLocaleString();
+
+        // စုစုပေါင်း (အခြေခံ + OT + အပိုငွေ) - နုတ်ငွေ
+        const netPay = (basePay + totalOTPay + extra) - minus;
         document.getElementById('final').innerText = Math.round(netPay).toLocaleString();
         document.getElementById('currLabel').innerText = document.getElementById('currency').value === "THB" ? "฿" : "Ks";
+    }
+
+    function saveToHistory() {
+        const amt = document.getElementById('final').innerText;
+        if(amt !== "0") alert("သိမ်းဆည်းပြီးပါပြီ- " + amt);
     }
 </script>
 </body>

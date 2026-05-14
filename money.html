@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payroll Pro Max</title>
+    <title>Payroll Pro Max - Live Rates</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
+        :root { --primary: #2c3e50; --accent: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; --world: #3498db; }
         body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
         .payroll-card { 
@@ -13,14 +13,32 @@
             border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative;
         }
         
+        /* Live Rate Style */
+        .rate-container {
+            background: linear-gradient(135deg, #eef2f3, #dae2e8);
+            border-radius: 15px;
+            padding: 12px;
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-left: 5px solid var(--world);
+        }
+        .rate-header { font-size: 13px; font-weight: bold; color: var(--world); display: flex; justify-content: space-between; align-items: center; }
+        .live-dot { height: 8px; width: 8px; background-color: #ff4d4d; border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
+        
+        .rate-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+        .rate-label { font-size: 12px; color: #666; font-weight: 500; }
+        .rate-value { font-size: 14px; font-weight: bold; color: var(--primary); }
+
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; max-width: 450px; }
         .lang-bar { display: flex; gap: 8px; }
         .lang-btn { cursor: pointer; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; background: white; font-size: 12px; }
         .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
         .calc-toggle { cursor: pointer; font-size: 20px; background: white; border: 1px solid #ddd; padding: 5px 10px; border-radius: 8px; }
 
-        h2 { text-align: center; color: var(--primary); margin-top: 0; }
+        h2 { text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 5px; }
         .input-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 4px; font-size: 13px; color: #666; }
         input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; outline: none; }
@@ -32,10 +50,9 @@
 
         .net-pay-box { background: var(--accent); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .net-pay-box h1 { margin: 5px 0; font-size: 28px; }
-
         .btn-save { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold; }
 
-        /* Calculator Styles */
+        /* Calculator Overlay */
         .calc-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; justify-content: center; align-items: center; }
         .calc-box { background: #222; padding: 20px; border-radius: 20px; width: 280px; }
         .calc-display { width: 100%; height: 50px; background: #333; color: white; border: none; border-radius: 10px; margin-bottom: 15px; text-align: right; padding: 10px; font-size: 24px; box-sizing: border-box; }
@@ -46,7 +63,7 @@
         .calc-btn.clr { background: #e74c3c; }
     </style>
 </head>
-<body>
+<body onload="fetchLiveRates()">
 
 <div class="top-bar">
     <div class="lang-bar">
@@ -59,6 +76,25 @@
 
 <div class="payroll-card">
     <h2 id="t-title">Payroll System Pro</h2>
+    
+    <div class="rate-container">
+        <div class="rate-header">
+            <span>🌎 Live Market Rate (1 USD)</span>
+            <span class="live-dot"></span>
+        </div>
+        <div class="rate-row">
+            <span class="rate-label">မြန်မာငွေ (MMK)</span>
+            <span class="rate-value" id="rate-mmk">Loading...</span>
+        </div>
+        <div class="rate-row">
+            <span class="rate-label">ထိုင်းဘတ် (THB)</span>
+            <span class="rate-value" id="rate-thb">Loading...</span>
+        </div>
+        <div class="rate-row">
+            <span class="rate-label">တရုတ်ယွမ် (CNY)</span>
+            <span class="rate-value" id="rate-cny">Loading...</span>
+        </div>
+    </div>
     
     <div style="display: flex; gap: 10px;">
         <div class="input-group" style="flex: 1;">
@@ -172,6 +208,23 @@
 </div>
 
 <script>
+    async function fetchLiveRates() {
+        try {
+            // ExchangeRate-API (Free)
+            const response = await fetch('https://open.er-api.com/v6/latest/USD');
+            const data = await response.json();
+            
+            if (data && data.rates) {
+                document.getElementById('rate-mmk').innerText = "Ks " + Math.round(data.rates.MMK).toLocaleString();
+                document.getElementById('rate-thb').innerText = "฿ " + data.rates.THB.toFixed(2);
+                document.getElementById('rate-cny').innerText = "¥ " + data.rates.CNY.toFixed(2);
+            }
+        } catch (error) {
+            console.log("Rate Fetch Error", error);
+            document.querySelectorAll('.rate-value').forEach(el => el.innerText = "Offline");
+        }
+    }
+
     const langData = {
         my: { title: "လစာတွက်စနစ် Pro", curr: "ငွေကြေး", type: "အမျိုးအစား", monthly: "လခစား", daily: "နေ့စား", salary: "အခြေခံလစာ", dailyrate: "တစ်ရက်နေ့စားခ", days: "အလုပ်လုပ်ရက်", extra: "အပိုငွေ/ဆုကြေး", otrate: "OT ၁ နာရီခ", ottime: "OT (နာရီ + မိနစ်)", minus: "နုတ်ငွေ", drate_sh: "တစ်နေ့လုပ်အားခ", ot_sh: "OT စုစုပေါင်း", extra_sh: "အပိုငွေပေါင်း", net: "စုစုပေါင်းရရှိငွေ", save: "မှတ်တမ်းသိမ်းမည်" },
         cn: { title: "工资计算器 Pro", curr: "货币", type: "类型", monthly: "月薪制", daily: "日薪制", salary: "基本工资", dailyrate: "日薪标准", days: "工作天数", extra: "奖金/津贴", otrate: "加班时薪", ottime: "加班 (小时+分)", minus: "扣除金额", drate_sh: "日薪计算", ot_sh: "加班费总计", extra_sh: "总奖金", net: "实发工资总額", save: "保存记录" },
@@ -235,7 +288,6 @@
         const netPay = (basePay + totalOTPay + extra) - minus;
         document.getElementById('final').innerText = Math.round(netPay).toLocaleString();
         
-        // ငွေကြေးသင်္ကေတ ပြောင်းလဲခြင်း
         const curr = document.getElementById('currency').value;
         let symbol = "฿";
         if (curr === "MMK") symbol = "Ks";

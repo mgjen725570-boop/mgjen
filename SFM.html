@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Step Thailand - Fixed Edition</title>
+    <style>
+        :root { --primary: #d32f2f; --secondary: #1976d2; --success: #27ae60; --warning: #ff9800; --bg: #f8f9fa; --text: #333; --card-bg: white; }
+        .dark-mode { --bg: #1a1a1a; --text: #f0f0f0; --card-bg: #2d2d2d; }
+        
+        body { font-family: 'Pyidaungsu', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
+        .container { max-width: 500px; margin: auto; }
+        
+        .header { background: var(--primary); color: white; padding: 20px 15px; border-radius: 15px; text-align: center; margin-bottom: 15px; position: relative; }
+        .settings-btn { position: absolute; right: 15px; top: 18px; font-size: 22px; cursor: pointer; }
+        
+        .location-card { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; text-align: center; }
+
+        .category-btn { background: var(--card-bg); border: 1px solid #ddd; border-radius: 12px; padding: 18px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
+        
+        .sub-section { display: none; background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+
+        .poi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .poi-item { background: #f0f4f8; padding: 10px; border-radius: 10px; text-align: center; text-decoration: none; color: #333; font-size: 12px; font-weight: bold; }
+        
+        .call-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .call-now-btn { background: var(--success); color: white; border: none; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+        .modal-content { background: var(--card-bg); margin: 15% auto; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; color: var(--text); }
+        .setting-opt { padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
+        .input-box { width: 100%; height: 100px; margin-top: 10px; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-family: inherit; box-sizing: border-box; }
+        .action-btn { background: var(--secondary); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; margin-top: 15px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body onload="getCurrentCity()">
+
+<div class="container">
+    <div class="header">
+        <span class="settings-btn" onclick="openModal('settingsModal')">⚙️</span>
+        <h2 style="margin:0;">🇲🇲 Safe Step Thailand 🇹🇭</h2>
+        <p style="margin:5px 0 0 0; font-size:12px;">ထိုင်းရောက်မြန်မာများအတွက် အရေးပေါ်အကူအညီ</p>
+    </div>
+
+    <div class="location-card">
+        <div style="font-size:11px; opacity:0.8;">📍 လက်ရှိတည်နေရာ</div>
+        <div id="city-display" style="font-size:18px; font-weight:bold;">ရှာဖွေနေပါသည်...</div>
+    </div>
+
+    <div class="category-btn" onclick="toggleSection('poi')">
+        <span style="font-weight:bold;">📍 နီးစပ်ရာနေရာများ ရှာရန်</span>
+        <span>▾</span>
+    </div>
+    <div id="poi" class="sub-section">
+        <div class="poi-grid">
+            <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" class="poi-item">🏥<br>ဆေးရုံ</a>
+            <a href="https://www.google.com/maps/search/police+station+near+me" target="_blank" class="poi-item">👮<br>ရဲစခန်း</a>
+            <a href="https://www.google.com/maps/search/atm+near+me" target="_blank" class="poi-item">💰<br>ATM/ဘဏ်</a>
+        </div>
+    </div>
+
+    <div class="category-btn" onclick="toggleSection('embassy')">
+        <span style="font-weight:bold;">🇲🇲 မြန်မာသံရုံးသို့ ဆက်သွယ်ရန်</span>
+        <span>▾</span>
+    </div>
+    <div id="embassy" class="sub-section">
+        <div class="call-item"><span>062 689 0119</span><a href="tel:0626890119" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>065 220 6952</span><a href="tel:0652206952" class="call-now-btn">📞 ခေါ်မည်</a></div>
+    </div>
+
+    <div class="category-btn" onclick="toggleSection('u-hla-khaing')">
+        <span style="font-weight:bold;">⚖️ U Hla Khaing-သို့ဆက်သွယ်ရန်</span>
+        <span>▾</span>
+    </div>
+    <div id="u-hla-khaing" class="sub-section">
+        <b style="color:var(--secondary);">U Hla Khaing</b>
+        <div class="call-item"><span>081 306 6679</span><a href="tel:0813066679" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>085 341 5611</span><a href="tel:0853415611" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>094 887 9992</span><a href="tel:0948879992" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>066 159 3331</span><a href="tel:0661593331" class="call-now-btn">📞 ခေါ်မည်</a></div>
+    </div>
+
+    <div class="category-btn" onclick="toggleSection('mhac-help')">
+        <span style="font-weight:bold;">🤝 MHAC-မဟာမိတ်အဖွဲ့</span>
+        <span>▾</span>
+    </div>
+    <div id="mhac-help" class="sub-section">
+        <b style="color:var(--secondary);">YE MIN(AAC)</b>
+        <div class="call-item"><span>061 141 4199</span><a href="tel:0611414199" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>064 912 9190</span><a href="tel:0649129190" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>088 855 9792</span><a href="tel:0888559792" class="call-now-btn">📞 ခေါ်မည်</a></div>
+    </div>
+
+    <div class="category-btn" onclick="toggleSection('labor-help')">
+        <span style="font-weight:bold;">🤝 ကိုမုန်တိုင်းအဖွဲ့သို့ဆက်သွယ်ရန်</span>
+        <span>▾</span>
+    </div>
+    <div id="labor-help" class="sub-section">
+        <b style="color:var(--secondary);">Myo Thuya Oo (M A V)</b>
+        <div class="call-item"><span>062 768 0656</span><a href="tel:0627680656" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>081 423 4369</span><a href="tel:0814234369" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>090 099 0461</span><a href="tel:0900990461" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <br>
+        <b style="color:var(--primary);">မုန်တိုင်း (W A G)</b>
+        <div class="call-item"><span>099 459 2291</span><a href="tel:0994592291" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>091 005 4829</span><a href="tel:0910054829" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>080 593 1179</span><a href="tel:0805931179" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>094 498 7773</span><a href="tel:0949877736" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <div class="call-item"><span>065 683 4746</span><a href="tel:0656834746" class="call-now-btn">📞 ခေါ်မည်</a></div>
+    </div>
+</div>
+
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">Settings</h3>
+        <div class="setting-opt" onclick="toggleDarkMode()">
+            <span>🌑 Dark Mode</span>
+            <span id="dm-status">Off</span>
+        </div>
+        <div class="setting-opt" onclick="openModal('feedbackModal')">
+            <span>📩 အကြံပေးရန်</span>
+        </div>
+        <div class="setting-opt" onclick="openModal('aboutModal')">
+            <span>ℹ️ About</span>
+        </div>
+        <button class="action-btn" style="background:#888;" onclick="closeModal('settingsModal')">ပိတ်မည်</button>
+    </div>
+</div>
+
+<div id="feedbackModal" class="modal">
+    <div class="modal-content">
+        <h3>အကြံပေးစာပို့ရန်</h3>
+        <textarea id="feedbackMsg" class="input-box" placeholder="ဒီမှာ စာရေးပါ..."></textarea>
+        <button class="action-btn" onclick="sendFeedback()">Telegram သို့ ပို့မည်</button>
+        <button class="action-btn" style="background:#888;" onclick="closeModal('feedbackModal')">မပို့တော့ပါ</button>
+    </div>
+</div>
+
+<div id="aboutModal" class="modal">
+    <div class="modal-content">
+        <h3>About</h3>
+        <p style="font-size:14px; line-height:1.7;">
+            မဂ်လာပါ ဒီဆောဝဲလ်လေးကိုဖန်တီးရခြင်းက ကျွန်တော် တို့မြန်မာပြည်သားတေအရေးပေါ်ကြုံလာရင် အပြေစေရေးဖြစ်ပါတယ် အားလုံးဘေးကင်းလုံခြုံကျပါစေဗျ။
+        </p>
+        <p style="text-align:right; font-weight:bold; color:var(--primary);">- MGJEN</p>
+        <button class="action-btn" onclick="closeModal('aboutModal')">နားလည်ပါပြီ</button>
+    </div>
+</div>
+
+<script>
+    const TG_TOKEN = "8852629437:AAEbVN2DWd7mVXwiFKD22Ec8wWUYvHVDJrk";
+    const TG_CHAT_ID = "7454477290";
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        document.getElementById('dm-status').innerText = isDark ? "On" : "Off";
+    }
+
+    function openModal(id) { 
+        closeModal('settingsModal');
+        document.getElementById(id).style.display = 'block'; 
+    }
+    
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    async function sendFeedback() {
+        const msg = document.getElementById('feedbackMsg').value;
+        if(!msg) return alert("စာအရင်ရေးပါ");
+        const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`;
+        try {
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TG_CHAT_ID, text: `📩 Feedback:\n${msg}` })
+            });
+            alert("ပို့ပြီးပါပြီ။");
+            document.getElementById('feedbackMsg').value = '';
+            closeModal('feedbackModal');
+        } catch(e) { alert("ပို့၍မရပါ။"); }
+    }
+
+    // တည်နေရာပြစနစ် (Improved)
+    async function getCurrentCity() {
+        const display = document.getElementById('city-display');
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=my`);
+                    const data = await res.json();
+                    const loc = data.address.city || data.address.town || data.address.province || data.address.state || "Thailand";
+                    display.innerText = loc;
+                } catch (e) { display.innerText = "Thailand"; }
+            }, (err) => {
+                display.innerText = "တည်နေရာခွင့်ပြုပေးပါ";
+                console.error(err);
+            }, { timeout: 10000 });
+        } else {
+            display.innerText = "GPS မရရှိနိုင်ပါ";
+        }
+    }
+
+    function toggleSection(id) {
+        const section = document.getElementById(id);
+        const isVisible = section.style.display === 'block';
+        document.querySelectorAll('.sub-section').forEach(s => s.style.display = 'none');
+        section.style.display = isVisible ? 'none' : 'block';
+    }
+</script>
+</body>
+</html>

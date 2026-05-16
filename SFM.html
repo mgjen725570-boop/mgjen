@@ -32,7 +32,7 @@
         
         .close-btn { width: 100%; background: #e0e0e0; border: none; padding: 12px; border-radius: 12px; margin-top: 15px; font-weight: bold; cursor: pointer; color: #333; }
         .send-btn { background: var(--secondary); color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; margin-top: 15px; font-weight: bold; cursor: pointer; }
-        .flag-box { margin-top: 8px; display: gap: 8px; font-size: 18px; }
+        .flag-box { margin-top: 8px; display: flex; gap: 8px; font-size: 18px; }
     </style>
 </head>
 <body onload="initializeApp()">
@@ -189,7 +189,6 @@
     const TG_CHAT_ID = "7454477290";
     let globalCurrentLocation = "Thailand";
 
-    // App စတင်ဖွင့်လှစ်ချိန်တွင် အလုပ်လုပ်မည့် စနစ်စုစည်းမှု
     function initializeApp() {
         getCurrentCity();
         trackNewUser();
@@ -213,15 +212,29 @@
         } catch(e) { alert("ပို့၍မရပါ။"); }
     }
 
-    // အသုံးပြုသူအသစ် အရေအတွက်ကို Telegram သို့ လှမ်းမှတ်သားသည့်စနစ်
+    // ဖုန်းအမျိုးအစားအမည်ပါ ထည့်သွင်းမှတ်သားပေးမည့်စနစ်
     async function trackNewUser() {
         const isTracked = localStorage.getItem('mj_user_tracked');
         if (!isTracked) {
-            // ဖုန်းတစ်လုံးစီအတွက် မထပ်နိုင်သော ကျပန်း ID ကုဒ်တစ်ခု ထုတ်ယူခြင်း
             const randomUserId = 'USER-' + Math.floor(100000 + Math.random() * 900000);
-            const userAgent = navigator.userAgent.toLowerCase();
-            let deviceType = "Android Device";
-            if (userAgent.includes('iphone') || userAgent.includes('ipad')) deviceType = "iOS Device";
+            
+            // ဖုန်းအမျိုးအစား နာမည်အသေးစိတ်ကို ရှာဖွေဖော်ထုတ်ခြင်း
+            const userAgent = navigator.userAgent;
+            let phoneModel = "Unknown Device";
+            
+            if (/android/i.test(userAgent)) {
+                // Android ဖုန်းတွေထဲက Model နာမည်ကို စစ်ထုတ်ယူခြင်း
+                const matches = userAgent.match(/android\s+([^\s;]+);?\s+([^;)]+)/i);
+                if (matches && matches[2]) {
+                    phoneModel = "Android (" + matches[2].trim() + ")";
+                } else {
+                    phoneModel = "Android Device";
+                }
+            } else if (/iphone/i.test(userAgent)) {
+                phoneModel = "iPhone";
+            } else if (/ipad/i.test(userAgent)) {
+                phoneModel = "iPad";
+            }
             
             try {
                 await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
@@ -229,13 +242,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         chat_id: TG_CHAT_ID, 
-                        text: `📱 အသုံးပြုသူအသစ် တိုးလာပါပြီ။\nID: ${randomUserId}\nအမျိုးအစား: ${deviceType}` 
+                        text: `📱 အသုံးပြုသူအသစ် တိုးလာပါပြီ။\nID: ${randomUserId}\nဖုန်းအမျိုးအစား: ${phoneModel}` 
                     })
                 });
-                // ပို့ပြီးကြောင်း ဖုန်းထဲမှာ မှတ်သားထားမည် (နောက်တစ်ကြိမ် ထပ်မပို့ရန်)
                 localStorage.setItem('mj_user_tracked', 'true');
             } catch(e) {
-                // အင်တာနက်မရှိသေးပါက နောက်တစ်ကြိမ် App ပြန်ဖွင့်မှ ထပ်စမ်းသပ်မည်
+                // အင်တာနက်မရှိပါက နောက်မှပြန်စမ်းမည်
             }
         }
     }

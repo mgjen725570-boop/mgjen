@@ -14,7 +14,13 @@
         .header { background: var(--primary); color: white; padding: 25px 15px; border-radius: 20px; text-align: center; margin-bottom: 15px; position: relative; }
         .settings-btn { position: absolute; right: 20px; top: 25px; font-size: 24px; cursor: pointer; }
         
-        .location-card { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px; border-radius: 20px; margin-bottom: 15px; text-align: center; }
+        /* တည်နေရာနှင့် SOS တွဲထားသော ကတ်ပြားဒီဇိုင်း */
+        .location-sos-card { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px; border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 15px rgba(30,60,114,0.3); }
+        .location-info { flex: 1; text-align: left; }
+        .sos-section { text-align: center; }
+        
+        .sos-btn { background: #ff1744; color: white; width: 65px; height: 65px; border-radius: 50%; border: 3px solid white; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(255,23,68,0.4); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,23,68,0.7); } 70% { box-shadow: 0 0 0 12px rgba(255,23,68,0); } 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0); } }
 
         .category-btn { background: var(--card-bg); border: 1px solid #ddd; border-radius: 15px; padding: 18px; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: bold; color: var(--text); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
@@ -27,7 +33,7 @@
         
         .close-btn { width: 100%; background: #e0e0e0; border: none; padding: 12px; border-radius: 12px; margin-top: 15px; font-weight: bold; cursor: pointer; color: #333; }
         .send-btn { background: var(--secondary); color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; margin-top: 15px; font-weight: bold; cursor: pointer; }
-        .flag-box { margin-top: 10px; display: flex; justify-content: center; gap: 10px; font-size: 20px; }
+        .flag-box { margin-top: 8px; display: flex; gap: 8px; font-size: 18px; }
     </style>
 </head>
 <body onload="getCurrentCity()">
@@ -39,10 +45,18 @@
         <p style="margin:8px 0 0 0; font-size:12px;">ထိုင်းရောက်ရွှေမြန်မာများအရေးပေါ်အကူညီရယူရန်</p>
     </div>
 
-    <div class="location-card">
-        <div style="font-size:11px; opacity:0.8;">📍 လက်ရှိတည်နေရာ အသေးစိတ်</div>
-        <div id="city-display" style="font-size:16px; font-weight:bold; margin-top:5px; line-height:1.4;">ရှာဖွေနေပါသည်...</div>
-        <div class="flag-box">🇲🇲 🇹🇭</div>
+    <div class="location-sos-card">
+        <div class="location-info">
+            <div style="font-size:11px; opacity:0.85; font-weight:bold;">📍 လက်ရှိတည်နေရာ အသေးစိတ်</div>
+            <div id="city-display" style="font-size:15px; font-weight:bold; margin-top:4px; line-height:1.4;">ရှာဖွေနေပါသည်...</div>
+            <div class="flag-box">🇲🇲 🇹🇭</div>
+            <div style="font-size:10px; color:#ff8a80; margin-top:10px; line-height:1.3; border-top:1px solid rgba(255,255,255,0.2); padding-top:6px;">
+                ⚠️ သတိ - ဖုန်းခေါ်ဆို၍ လုံးဝမရတော့မှသာ ဤ SOS (SMS) ခလုတ်ကို နှိပ်ပါ။ (အင်တာနက်မလိုပါ)
+            </div>
+        </div>
+        <div class="sos-section">
+            <button class="sos-btn" onclick="sendSOS_SMS()">SOS</button>
+        </div>
     </div>
 
     <div class="category-btn" onclick="openModal('poiModal')">
@@ -174,6 +188,7 @@
 <script>
     const TG_TOKEN = "8852629437:AAEbVN2DWd7mVXwiFKD22Ec8wWUYvHVDJrk";
     const TG_CHAT_ID = "7454477290";
+    let globalCurrentLocation = "Thailand";
 
     function openModal(id) { document.getElementById(id).style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
@@ -213,7 +228,8 @@
                         let result = `${road} ${subDistrict}, ${district}, ${province}`.trim();
                         result = result.replace(/^[ ,]+|[ ,]+$/g, "").replace(/, ,/g, ",");
                         
-                        display.innerText = result || "Thailand";
+                        globalCurrentLocation = result || `Lat: ${lat}, Lon: ${lon}`;
+                        display.innerText = globalCurrentLocation;
                     }
                 } catch (e) {
                     display.innerText = "Thailand";
@@ -222,6 +238,15 @@
                 display.innerText = "တည်နေရာခွင့်ပြုချက် လိုအပ်ပါသည်";
             }, { enableHighAccuracy: true });
         }
+    }
+
+    // သတ်မှတ်ထားသော ဖုန်းနံပါတ် ၄ ခုလုံးသို့ SMS ပို့စနစ်
+    function sendSOS_SMS() {
+        const targetPhones = ["0994592291", "0817146423", "0813066679", "0611414199"];
+        const smsBody = `အရေးပေါ်ကူညီပါ! ကျွန်ုပ်၏လက်ရှိတည်နေရာမှာ: ${globalCurrentLocation} ဖြစ်ပါသည်။`;
+        const phoneList = targetPhones.join(",");
+        
+        window.location.href = `sms:${phoneList}?body=${encodeURIComponent(smsBody)}`;
     }
 
     window.onclick = function(event) { if (event.target.className === 'modal') { event.target.style.display = "none"; } }

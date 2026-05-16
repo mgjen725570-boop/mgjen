@@ -51,7 +51,7 @@
     </div>
 
     <div class="category-btn" onclick="openModal('embassyModal')">
-        <span>🇲🇲 မြန်မာသံရုံးသို့-ဆက်သွယ်ရန်</span>
+        <span>🇲🇲 မြန်မာသံရုံးသို့ ဆက်သွယ်ရန်</span>
         <span>▾</span>
     </div>
 
@@ -66,7 +66,12 @@
     </div>
 
     <div class="category-btn" onclick="openModal('laborModal')">
-        <span>🤝 ကိုမုန်တိုင်းအဖွဲ့သို့-ဆက်သွယ်ရန်</span>
+        <span>🤝 ကိုမုန်တိုင်းအဖွဲ့အစည်းသို့ ဆက်သွယ်ရန်</span>
+        <span>▾</span>
+    </div>
+
+    <div class="category-btn" onclick="openModal('uffLabourModal')">
+        <span>🤝 UFF-Labour-အဖွဲ့သို့ ဆက်သွယ်ရန်</span>
         <span>▾</span>
     </div>
 </div>
@@ -78,7 +83,7 @@
             <span>🌑 Dark Mode</span>
             <span id="dm-status">Off</span>
         </div>
-        <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="openModal('feedbackModal')">📩 အကြံပြု့ပေးရန်</div>
+        <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="openModal('feedbackModal')">📩 အကြံပေးရန်</div>
         <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="openModal('aboutModal')">ℹ️ About App</div>
         <button class="close-btn" onclick="closeModal('settingsModal')">ပိတ်မည်</button>
     </div>
@@ -139,6 +144,14 @@
     </div>
 </div>
 
+<div id="uffLabourModal" class="modal">
+    <div class="modal-content">
+        <h3 style="color:var(--secondary); margin-top:0;">UFF-Labour</h3>
+        <div class="call-item"><span>081 714 6423</span><a href="tel:0817146423" class="call-now-btn">📞 ခေါ်မည်</a></div>
+        <button class="close-btn" onclick="closeModal('uffLabourModal')">ပိတ်မည်</button>
+    </div>
+</div>
+
 <div id="poiModal" class="modal">
     <div class="modal-content">
         <h3>နီးစပ်ရာရှာရန်</h3>
@@ -153,7 +166,7 @@
 <div id="aboutModal" class="modal">
     <div class="modal-content">
         <h3>About MJ Safe Step</h3>
-        <p>ထိုင်းရောက်ရွှေမြန်မာများ အရေးပေါ်ကိစ္စရပ်များအတွက် အလွယ်တကူဆက်သွယ်နိုင်ရန် MGJEN မှ ဖန်တီးထားပါသည်။</p>
+        <p>ထိုင်းရောက်မြန်မာများ အရေးပေါ်ကိစ္စရပ်များအတွက် အလွယ်တကူဆက်သွယ်နိုင်ရန် MGJEN မှ ဖန်တီးထားပါသည်။</p>
         <button class="close-btn" onclick="closeModal('aboutModal')">ပိတ်မည်</button>
     </div>
 </div>
@@ -192,14 +205,12 @@
                     
                     if (data.address) {
                         const a = data.address;
-                        // အတိအကျဆုံးဖြစ်မည့် လမ်း၊ ရပ်ကွက်၊ မြို့နယ် အစဉ်လိုက်ပြသရန်
                         const road = a.road || a.suburb || "";
                         const subDistrict = a.neighbourhood || a.village || a.town || "";
                         const district = a.city_district || a.district || "";
                         const province = a.city || a.province || "";
                         
                         let result = `${road} ${subDistrict}, ${district}, ${province}`.trim();
-                        // အပိုကော်မာများကို ရှင်းလင်းခြင်း
                         result = result.replace(/^[ ,]+|[ ,]+$/g, "").replace(/, ,/g, ",");
                         
                         display.innerText = result || "Thailand";

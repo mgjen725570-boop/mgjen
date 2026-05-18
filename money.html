@@ -42,8 +42,6 @@
 
         .title-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .right-actions { display: flex; align-items: center; gap: 12px; }
-        .user-counter { background: #eef2f3; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #555; border: 1px solid #ddd; }
-        .dark-mode .user-counter { background: #34495e; color: #fff; border-color: #4f5d73; }
         .settings-btn { font-size: 22px; cursor: pointer; transition: 0.2s; user-select: none; }
         .settings-btn:hover { transform: rotate(45deg); }
 
@@ -99,7 +97,6 @@
     <div class="title-container">
         <h2 id="t-title">Payroll System Pro</h2>
         <div class="right-actions">
-            <span class="user-counter" id="user-count">👥 Users: ...</span>
             <span class="settings-btn" onclick="openModal('settingsModal')">⚙️</span>
         </div>
     </div>
@@ -236,7 +233,7 @@
         <h3 style="margin-top:0; color:var(--primary);">About Payroll Pro Max</h3>
         <p id="about-text">ဤဆော့ဖ်ဝဲလ်သည် ကမ္ဘာ့ပေါက်ဈေး Live Market Rate များကို အခြေခံ၍ အလုပ်သမားများ၏ အခြေခံလစာ၊ အချိန်ပို (OT) ကြေးနှင့် ဆုကြေးများကို တိကျမှန်ကန်စွာ တွက်ချက်ပေးနိုင်ရန် MGJEN မှ ဖန်တီးထားသော ပရော်ဖက်ရှင်နယ် လစာတွက်စနစ် ဖြစ်ပါသည်။</p>
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        <div style="font-size:11px; color:#888; text-align:center;">Version 2.5.3 (Pro Max)</div>
+        <div style="font-size:11px; color:#888; text-align:center;">Version 2.5.4 (Pro Max)</div>
         <button class="close-btn" onclick="closeModal('aboutModal')">ပိတ်မည်</button>
     </div>
 </div>
@@ -277,7 +274,6 @@
 
     function initApp() {
         fetchLiveRates();
-        updateUserCounter();
         checkNewUserAlert(); // ပထမဆုံးအကြိမ် ဖွင့်လှစ်မှု ရှိ/မရှိ စစ်ဆေးသည့်စနစ်
     }
 
@@ -298,30 +294,12 @@
         }
     }
 
-    // Live User Counter System (Using free secure hit counter)
-    async function updateUserCounter() {
-        try {
-            const namespace = "payroll_pro_max_mgjen_counter";
-            const response = await fetch(`https://api.countapi.xyz/hit/${namespace}/visits`);
-            const data = await response.json();
-            if(data && data.value) {
-                document.getElementById('user-count').innerText = "👥 Users: " + data.value.toLocaleString();
-            }
-        } catch (e) {
-            let localCount = localStorage.getItem('local_user_count') || 0;
-            localCount = parseInt(localCount) + 1;
-            localStorage.setItem('local_user_count', localCount);
-            document.getElementById('user-count').innerText = "👥 Users: " + localCount;
-        }
-    }
-
     // ပထမဆုံးအကြိမ် ဖွင့်လှစ်သည့်အခါ Telegram သို့ အလိုအလျောက် အကြောင်းကြားစနစ်
     async function checkNewUserAlert() {
         const isAppOpenedBefore = localStorage.getItem('payroll_app_opened');
         
         // အကယ်၍ ပထမဆုံးအကြိမ် ဖွင့်ခြင်းဖြစ်ပါက
         if (!isAppOpenedBefore) {
-            // အသုံးပြုသူ၏ ဖုန်း/စက်ပစ္စည်း အမျိုးအစားကို ခန့်မှန်းရယူခြင်း
             let deviceType = "Unknown Device";
             const ua = navigator.userAgent;
             if (/android/i.test(ua)) deviceType = "Android Phone";
@@ -337,7 +315,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: TG_CHAT_ID, text: alertMessage })
                 });
-                // ပထမဆုံးအကြိမ် စာပို့ပြီးကြောင်း မှတ်သားထားလိုက်သည်
                 localStorage.setItem('payroll_app_opened', 'true');
             } catch (e) {
                 console.log("New User Alert Send Failed", e);

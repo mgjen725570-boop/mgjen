@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sein Mg Mg - Admin Control Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e67e22; --success: #27ae60; --bg: #f4f7f6; --card-bg: white; --notice: #e74c3c; }
+        body { font-family: 'Pyidaungsu', sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .admin-card { background: var(--card-bg); width: 100%; max-width: 430px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 6px solid var(--primary); }
+        h2 { margin: 0 0 15px 0; color: var(--primary); font-size: 20px; text-align: center; font-weight: bold; }
+        .section-box { background: #f9fbfd; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .section-title { font-size: 14px; font-weight: bold; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #555; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 11px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s; box-sizing: border-box; color: #333; font-family: inherit; }
+        input[type="number"]:focus, input[type="text"]:focus { border-color: var(--primary); }
+        input[type="number"] { font-weight: bold; padding-right: 40px; }
+        .currency-addon { position: absolute; right: 15px; font-weight: bold; color: #888; }
+        .btn-action { width: 100%; padding: 12px; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; margin-top: 5px; }
+        .btn-rate { background: var(--accent); box-shadow: 0 4px 10px rgba(230,126,34,0.2); }
+        .btn-rate:hover { background: #d35400; }
+        .btn-marquee { background: var(--notice); box-shadow: 0 4px 10px rgba(231,76,60,0.2); }
+        .btn-marquee:hover { background: #c0392b; }
+        .status-box { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold; display: none; background-color: #e8f8f5; color: var(--success); border: 1px solid #a3e4d7; }
+        .current-val { font-weight: bold; color: #d35400; }
+    </style>
+</head>
+<body>
+
+<div class="admin-card">
+    <h2>Sein Mg Mg - Control Panel</h2>
+    
+    <div class="section-box">
+        <div class="section-title">💰 ငွေလဲနှုန်းသတ်မှတ်ခြင်း</div>
+        <div style="font-size:13px; margin-bottom:10px;">လက်ရှိပေါက်ဈေး: <span id="current-rate-text" class="current-val">...</span></div>
+        <div class="input-wrapper">
+            <input type="number" id="rate-input" placeholder="ဥပမာ - 775" step="any">
+            <span class="currency-addon">฿</span>
+        </div>
+        <button class="btn-action btn-rate" style="margin-top:12px;" onclick="updateLiveRate()">နှုန်းထားအသစ်တင်မည်</button>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">📢 စာတန်းအရှင်ပြေး ကြေညာချက် တင်ရန်</div>
+        <div style="font-size:12px; margin-bottom:10px; color:#555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            လက်ရှိပြေးနေသောစာ: <span id="current-marquee-text" style="color:var(--notice); font-weight:bold;">...</span>
+        </div>
+        <input type="text" id="marquee-input" placeholder="ဥပမာ - ယနေ့ ငွေလဲနှုန်းများ တက်နေပါသည်...">
+        <button class="btn-action btn-marquee" style="margin-top:12px;" onclick="updateMarqueeText()">ကြေညာချက်စာတန်း တင်မည်</button>
+    </div>
+
+    <div id="status-message" class="status-box"></div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDY8o3RX38-NlRkKeOC6gHWtfKXPcaxas",
+        authDomain: "mgjen-8b4f5.firebaseapp.com",
+        projectId: "mgjen-8b4f5",
+        storageBucket: "mgjen-8b4f5.appspot.com",
+        messagingSenderId: "68512708249",
+        appId: "1:68512708249:web:6334e940e8306f0ff6ba08"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    window.onload = function() {
+        // လက်ရှိ ငွေလဲနှုန်း ဖတ်ခြင်း
+        db.collection("system_settings").doc("thb_to_mmk_rate").onSnapshot(doc => {
+            if (doc.exists) {
+                const currentRate = doc.data().rate;
+                document.getElementById('current-rate-text').innerText = `${currentRate} ฿`;
+                if(!document.getElementById('rate-input').value) document.getElementById('rate-input').value = currentRate;
+            }
+        });
+
+        // လက်ရှိ ပြေးနေသောစာတန်း ဖတ်ခြင်း
+        db.collection("system_settings").doc("marquee_announcement").onSnapshot(doc => {
+            if (doc.exists) {
+                const currentText = doc.data().text;
+                document.getElementById('current-marquee-text').innerText = currentText;
+                if(!document.getElementById('marquee-input').value) document.getElementById('marquee-input').value = currentText;
+            }
+        });
+    };
+
+    // ငွေလဲနှုန်း Update လုပ်ခြင်း
+    function updateLiveRate() {
+        const rateValue = parseFloat(document.getElementById('rate-input').value);
+        if (!rateValue || rateValue <= 0) return alert("မှန်ကန်သော ဘတ်ငွေပမာဏ ဖြည့်ပါဗျာ။");
+
+        db.collection("system_settings").doc("thb_to_mmk_rate").set({
+            rate: rateValue,
+            last_updated: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true })
+        .then(() => showStatus("ငွေလဲနှုန်းကို အောင်မြင်စွာ ပြောင်းလဲလိုက်ပါပြီ။"))
+        .catch(() => alert("အမှားအယွင်းရှိပါသည်။"));
+    }
+
+    // စာတန်းအရှင်ပြေး Update လုပ်ခြင်း
+    function updateMarqueeText() {
+        const textValue = document.getElementById('marquee-input').value.trim();
+        if (!textValue) return alert("ကြေညာချင်သည့် စာသားတစ်ခုခု ရေးသားပေးပါဗျာ။");
+
+        db.collection("system_settings").doc("marquee_announcement").set({
+            text: textValue,
+            last_updated: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true })
+        .then(() => showStatus("ကြေညာချက်စာတန်းကို အောင်မြင်စွာ တင်လိုက်ပါပြီ။"))
+        .catch(() => alert("အမှားအယွင်းရှိပါသည်။"));
+    }
+
+    function showStatus(msg) {
+        const statusBox = document.getElementById('status-message');
+        statusBox.innerText = msg;
+        statusBox.style.display = 'block';
+        setTimeout(() => { statusBox.style.display = 'none'; }, 3000);
+    }
+</script>
+</body>
+</html>

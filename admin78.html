@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ရင်ငြိမ်းပန်း - Admin Panel</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap">
+    <style>
+        :root { --primary-gold: #d4af37; --royal-red: #800000; --text-dark: #2c3e50; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pyidaungsu', sans-serif; }
+        body { background-color: #f2f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 100vh; }
+        .admin-box { width: 100%; max-width: 500px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 3px solid var(--primary-gold); overflow: hidden; }
+        .admin-header { background: var(--royal-red); padding: 20px; text-align: center; border-bottom: 3px solid var(--primary-gold); }
+        .admin-header h2 { color: var(--primary-gold); font-size: 18px; }
+        .admin-body { padding: 25px; display: flex; flex-direction: column; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 14px; font-weight: bold; color: var(--royal-red); }
+        .form-control { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; }
+        .submit-btn { background: var(--royal-red); color: var(--primary-gold); border: 2px solid var(--primary-gold); padding: 15px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .status-msg { text-align: center; font-size: 14px; font-weight: bold; margin-top: 10px; display: none; }
+        
+        /* 🔔 ရင်ဖွင့်ချက် Toggle ခလုတ်နှင့် Form ပုံစံသစ် */
+        .toggle-section { background: #ffffff; border-radius: 15px; border: 2px solid var(--primary-gold); width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .toggle-trigger-btn { background: #5c0000; color: var(--primary-gold); width: 100%; padding: 15px; text-align: center; font-size: 15px; font-weight: bold; cursor: pointer; border: none; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .toggle-trigger-btn::before { content: "⚜️"; }
+        .toggle-trigger-btn::after { content: " 🔽"; }
+        .toggle-trigger-btn.active::after { content: " 🔼"; }
+        
+        .toggle-content { padding: 20px; display: none; flex-direction: column; gap: 15px; background: #fffdf9; border-top: 1px solid rgba(212,175,55,0.3); animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="toggle-section">
+        <button class="toggle-trigger-btn" id="toggleBtn" onclick="toggleQuoteForm()">ရင်ဖွင့်ချက်စာသားအသစ် ပြောင်းလဲရန်</button>
+        <div class="toggle-content" id="quoteFormContent">
+            <div class="form-group">
+                <label>✨ ယနေ့အတွက် ရင်ဖွင့်ချက် / ကောက်နုတ်ချက် စာသား</label>
+                <textarea class="form-control" id="adminQuoteInput" rows="4" placeholder="User App ရဲ့ Home Screen မှာ ချက်ချင်းပေါ်မယ့် စာသားကို ရိုက်ထည့်ပါ..."></textarea>
+            </div>
+            <button class="submit-btn" style="background: #5c0000; margin-top: 0;" onclick="updateAdminQuote()">📢 ရင်ဖွင့်ချက်စာသားကို Live ချိန်းမည်</button>
+            <div class="status-msg" id="quoteStatusMessage"></div>
+        </div>
+    </div>
+
+    <div class="admin-box">
+        <div class="admin-header">
+            <h2>⚜️ ရင်ငြိမ်းပန်း - Admin Panel (စာမူတင်ခန်း)</h2>
+        </div>
+        <div class="admin-body">
+            <div class="form-group">
+                <label>📌 စာပေကဏ္ဍ ရွေးချယ်ရန်</label>
+                <select class="form-control" id="bookCategory">
+                    <option value="ကဗျာ">ကဗျာကဏ္ဍ</option>
+                    <option value="ဝတ္ထု">ဝတ္ထုရှည်/တိုကဏ္ဍ</option>
+                    <option value="ဆောင်းပါး">သုတဆောင်းပါးကဏ္ဍ</option>
+                    <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသကဏ္ဍ</option>
+                    <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အားကဏ္ဍ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📝 စာအုပ် / စာမူ ခေါင်းစဉ်</label>
+                <input type="text" class="form-control" id="bookTitle" placeholder="စာမူခေါင်းစဉ် ရိုက်ထည့်ပါ...">
+            </div>
+            <div class="form-group">
+                <label>✍️ ကလောင်အမည် (စာရေးဆရာ)</label>
+                <input type="text" class="form-control" id="bookAuthor" placeholder="ကလောင်အမည် ရိုက်ထည့်ပါ...">
+            </div>
+            <div class="form-group">
+                <label>📖 စာသားအကြောင်းအရာ အပြည့်အစုံ</label>
+                <textarea class="form-control" id="bookContent" rows="6" placeholder="စာသားများကို ဤနေရာတွင် ရိုက်ထည့်ပါ..."></textarea>
+            </div>
+            <button class="submit-btn" onclick="uploadStoryToFirestore()">🚀 အွန်လိုင်းသို့ စာမူလှမ်းတင်မည်</button>
+            <div class="status-msg" id="statusMessage"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script>
+        // 🎯 Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDY8o3RX38-Nl1RkKeOC6gHWtfKXPcaxas",
+            authDomain: "mgjen-8b4f5.firebaseapp.com",
+            projectId: "mgjen-8b4f5",
+            storageBucket: "mgjen-8b4f5.firebasestorage.app",
+            messagingSenderId: "68512708249",
+            appId: "1:68512708249:web:6334e940e8306f0ff6ba08",
+            measurementId: "G-P6KTW7L3B4"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 🔄 ရင်ဖွင့်ချက်တင်တဲ့ Form ကို ဖွင့်/ပိတ်ပေးမည့် Function
+        function toggleQuoteForm() {
+            const formContent = document.getElementById('quoteFormContent');
+            const toggleBtn = document.getElementById('toggleBtn');
+            
+            if (formContent.style.display === "flex") {
+                formContent.style.display = "none";
+                toggleBtn.classList.remove('active');
+            } else {
+                formContent.style.display = "flex";
+                toggleBtn.classList.add('active');
+            }
+        }
+
+        // (၁) မူရင်း စာမူတင်ခြင်း လုပ်ဆောင်ချက်
+        function uploadStoryToFirestore() {
+            const cat = document.getElementById('bookCategory').value;
+            const title = document.getElementById('bookTitle').value.trim();
+            const author = document.getElementById('bookAuthor').value.trim();
+            const content = document.getElementById('bookContent').value.trim();
+            const statusDiv = document.getElementById('statusMessage');
+
+            if(!title || !author || !content) {
+                alert("⚠️ အချက်အလက်များ ပြည့်စုံအောင် ဖြည့်ပေးပါဦးဗျာ။"); return;
+            }
+
+            statusDiv.style.color = "#7f8c8d";
+            statusDiv.innerText = "⏳ Cloud Firestore သို့ စာမူလှမ်းတင်နေပါသည်...";
+            statusDiv.style.display = "block";
+
+            db.collection("books").add({
+                cat: cat,
+                title: title,
+                author: author,
+                content: content,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                statusDiv.style.color = "#27ae60";
+                statusDiv.innerText = "🎉 '" + title + "' စာမူကို Cloud Firestore ထဲသို့ အောင်မြင်စွာ တင်ပြီးပါပြီဗျာ။";
+                document.getElementById('bookTitle').value = "";
+                document.getElementById('bookAuthor').value = "";
+                document.getElementById('bookContent').value = "";
+            })
+            .catch((error) => {
+                statusDiv.style.color = "#c0392b";
+                statusDiv.innerText = "❌ မအောင်မြင်ပါ- " + error.message;
+            });
+        }
+
+        // (၂) ရင်ဖွင့်ချက် ကတ်ပြားစာသားအား Update ပြုလုပ်ခြင်း
+        function updateAdminQuote() {
+            const quoteText = document.getElementById('adminQuoteInput').value.trim();
+            const statusDiv = document.getElementById('quoteStatusMessage');
+
+            if(!quoteText) {
+                alert("⚠️ ပြောင်းလဲမယ့် ရင်ဖွင့်ချက်စာသား ရိုက်ထည့်ပေးပါဦးဗျာ။"); return;
+            }
+
+            statusDiv.style.color = "#7f8c8d";
+            statusDiv.innerText = "⏳ ရင်ဖွင့်ချက် စာသားကို ချိန်းပေးနေပါသည်...";
+            statusDiv.style.display = "block";
+
+            db.collection("app_config").doc("daily_quote").set({
+                text: quoteText,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                statusDiv.style.color = "#27ae60";
+                statusDiv.innerText = "📢 ရင်ဖွင့်ချက်စာသား ပြောင်းလဲမှု အောင်မြင်ပါပြီဗျာ။";
+                document.getElementById('adminQuoteInput').value = "";
+                // အောင်မြင်သွားရင် Form ကို ၃ စက္ကန့်အကြာမှာ အလိုအလျောက် ပြန်ပိတ်ပေးမည်
+                setTimeout(() => {
+                    toggleQuoteForm();
+                    statusDiv.style.display = "none";
+                }, 2000);
+            })
+            .catch((error) => {
+                statusDiv.style.color = "#c0392b";
+                statusDiv.innerText = "❌ ချိန်းရမအောင်မြင်ပါ- " + error.message;
+            });
+        }
+    </script>
+</body>
+</html>

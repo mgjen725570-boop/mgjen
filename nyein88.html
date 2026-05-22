@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ရင်ငြိမ်းပန်း - ရင်တွင်းဖြစ်စာပေ</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&family=Padauk:wght@400;700&display=swap">
+    <style>
+        :root {
+            --primary-gold: #d4af37;
+            --royal-red: #800000;
+            --bg-color: #fcfbf7;
+            --text-dark: #2c3e50;
+            --white: #ffffff;
+            --reader-bg: #fffdf9;
+            --reader-text: #2c3e50;
+            --line-height: 1.9;
+            --font-family: 'Pyidaungsu', sans-serif;
+        }
+
+        /* 🌙 Modes */
+        .mode-dark { --bg-color: #1a1510; --royal-red: #3a0000; --text-dark: #f5f0e6; --white: #2d241e; --reader-bg: #1e1a15; --reader-text: #e6dbb9; }
+        .mode-sepia { --bg-color: #f4ecd8; --text-dark: #5b4636; --reader-bg: #f4ecd8; --reader-text: #5b4636; }
+        .font-rounded { --font-family: 'Padauk', sans-serif; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); transition: background 0.3s, color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-dark); display: flex; justify-content: center; min-height: 100vh; }
+
+        .phone-view { width: 100%; max-width: 480px; background: var(--white); min-height: 100vh; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+
+        /* Navbar */
+        .navbar { background-color: var(--royal-red); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--primary-gold); position: sticky; top: 0; z-index: 1000; }
+        .nav-title { font-size: 15px; font-weight: bold; color: var(--primary-gold); text-align: center; flex-grow: 1; }
+        .menu-btn { cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 5px; }
+        .menu-btn span { width: 22px; height: 3px; background: var(--primary-gold); border-radius: 10px; }
+
+        /* Screens */
+        .screen { display: none; flex-direction: column; flex-grow: 1; padding: 20px; animation: fadeIn 0.3s ease; }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ⚜️ Kanoke Buttons */
+        .kanoke-container { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+        .kanoke-btn { 
+            background: var(--royal-red); color: var(--primary-gold); border: 2px solid var(--primary-gold); 
+            border-radius: 14px; padding: 16px; font-size: 15px; font-weight: bold; text-align: center; 
+            cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
+        }
+        .kanoke-btn::before, .kanoke-btn::after {
+            content: "⚜️"; position: absolute; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.8;
+        }
+        .kanoke-btn::before { left: 15px; }
+        .kanoke-btn::after { right: 15px; }
+
+        /* Utility Buttons */
+        .utility-row { display: flex; gap: 10px; margin-top: 20px; }
+        .utility-btn { 
+            flex: 1; background: var(--bg-color); color: var(--royal-red); border: 1px solid var(--primary-gold); 
+            padding: 12px; border-radius: 10px; font-size: 13px; text-align: center; cursor: pointer; font-weight: bold; 
+        }
+
+        /* ⚜️ Admin ရင်ဖွင့်ချက် ကတ်ပြားဒီဇိုင်း */
+        .admin-featured-card {
+            background: linear-gradient(135deg, #fdfbf1 0%, #f5ecd8 100%);
+            border: 2px solid var(--primary-gold); border-radius: 15px;
+            padding: 18px; margin-top: 25px; text-align: center;
+            position: relative; box-shadow: 0 4px 12px rgba(212,175,55,0.15);
+        }
+        .admin-featured-title { font-size: 13px; font-weight: bold; color: var(--royal-red); margin-bottom: 8px; text-decoration: underline; }
+        .admin-featured-text { font-size: 15px; font-style: italic; color: #444; line-height: 1.6; white-space: pre-line; }
+
+        /* Book List Item */
+        .book-list-item { background: var(--bg-color); border-left: 5px solid var(--royal-red); border-radius: 0 12px 12px 0; padding: 15px; margin-bottom: 12px; cursor: pointer; border-top: 1px solid rgba(0,0,0,0.05); }
+        .item-title { font-size: 15px; font-weight: bold; }
+        .item-author { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
+
+        /* Reader Screen */
+        .reader-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .reader-box { background: var(--reader-bg); color: var(--reader-text); border: 1px solid var(--primary-gold); border-radius: 12px; padding: 20px; font-size: 17px; line-height: var(--line-height); text-align: justify; white-space: pre-line; overflow-y: auto; flex-grow: 1; }
+
+        /* 🎴 Settings Card (မူလတိုင်း ၁၀၀% ပြန်ဖော်ထားသည်) */
+        .settings-card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 15px; }
+        .settings-card-overlay.active { display: flex; }
+        .settings-card { background: var(--white); width: 100%; max-height: 90vh; border: 3px solid var(--primary-gold); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .sidebar-title { color: var(--royal-red); font-size: 16px; font-weight: bold; text-align: center; border-bottom: 2px solid var(--primary-gold); padding-bottom: 8px; }
+        
+        .setting-section-title { font-size: 12px; color: var(--royal-red); font-weight: bold; margin-top: 8px; }
+        .setting-item { background: var(--bg-color); padding: 11px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border: 1px solid rgba(212,175,55,0.2); }
+        
+        .btn-group { display: flex; gap: 5px; }
+        .action-btn { background: var(--royal-red); color: var(--primary-gold); border: 1px solid var(--primary-gold); padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold; }
+        .small-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; background: var(--white); color: var(--royal-red); }
+
+        .back-btn { background: var(--royal-red); color: var(--primary-gold); border: 1px solid var(--primary-gold); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 15px; align-self: flex-start; font-size: 13px; }
+        #bookmarkBtn { font-size: 20px; cursor: pointer; color: var(--royal-red); }
+        .screen-category-title { font-size: 14px; color: var(--royal-red); font-weight: bold; text-align: center; margin-bottom: 15px; }
+    </style>
+</head>
+<body class="mode-sepia">
+
+    <div class="phone-view">
+        <div class="navbar">
+            <div class="menu-btn" onclick="toggleSettingsCard()">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="nav-title">📖 ရင်ငြိမ်းပန်း-ရင်တွင်းဖြစ်စာပေ 📖</div>
+            <div style="width: 22px;"></div>
+        </div>
+
+        <div class="screen active" id="mainScreen">
+            <div class="screen-category-title">⚜️ စာပေကဏ္ဍများ ရွေးချယ်ပါ ⚜️</div>
+            <div class="kanoke-container">
+                <div class="kanoke-btn" onclick="loadBooks('ကဗျာ')">ကဗျာကဏ္ဍ</div>
+                <div class="kanoke-btn" onclick="loadBooks('ဝတ္ထု')">ဝတ္ထုရှည်/တိုကဏ္ဍ</div>
+                <div class="kanoke-btn" onclick="loadBooks('ဆောင်းပါး')">သုတဆောင်းပါးကဏ္ဍ</div>
+                <div class="kanoke-btn" onclick="loadBooks('ဟာသ')">ရယ်မောဖွယ်ရာ ဟာသကဏ္ဍ</div>
+                <div class="kanoke-btn" onclick="loadBooks('စိတ်ဓာတ်ခွန်အား')">စိတ်ဓာတ်ခွန်အားကဏ္ဍ</div>
+            </div>
+
+            <div class="utility-row">
+                <div class="utility-btn" onclick="showSavedBooks('bookmarks')">❤️ အသည်းစွဲများ</div>
+                <div class="utility-btn" onclick="showSavedBooks('history')">🕒 ဖတ်ခဲ့သမျှ</div>
+            </div>
+
+            <div class="admin-featured-card">
+                <div class="admin-featured-title">⚜️ ယနေ့ဖတ်ရှုရန် ရင်တွင်းဖြစ်ကောက်နုတ်ချက် ⚜️</div>
+                <div class="admin-featured-text" id="adminQuoteText">ရင်ဖွင့်စာသားများ ရယူနေပါသည်...</div>
+            </div>
+        </div>
+
+        <div class="screen" id="listScreen">
+            <button class="back-btn" onclick="changeScreen('mainScreen')">⬅️ ပြန်သွားရန်</button>
+            <div class="screen-category-title" id="listScreenCategoryName"></div>
+            <div id="booksDisplayList"></div>
+        </div>
+
+        <div class="screen" id="readScreen">
+            <div class="reader-controls">
+                <button class="back-btn" id="readerBackBtn" style="margin-bottom:0;">⬅️ ပြန်ထွက်မည်</button>
+                <div id="bookmarkBtn" onclick="toggleBookmark()">♡</div>
+            </div>
+            <h3 id="readBookTitle" style="margin-bottom: 5px; color: var(--royal-red); font-size: 16px;"></h3>
+            <p id="readBookAuthor" style="font-size: 12px; color: #7f8c8d; margin-bottom: 15px;"></p>
+            <div class="reader-box" id="readerBody"></div>
+        </div>
+
+        <div class="settings-card-overlay" id="settingsOverlay" onclick="toggleSettingsCard()">
+            <div class="settings-card" onclick="event.stopPropagation()">
+                <div class="sidebar-title">⚜️ အပြင်အဆင်များ</div>
+                
+                <div class="setting-section-title">စာဖတ်မုဒ် အလင်းအမှောင်</div>
+                <div class="setting-item">
+                    <span>မျက်နှာပြင်အရောင်</span>
+                    <div class="btn-group">
+                        <button class="action-btn" onclick="setMode('normal')">ပုံမှန်</button>
+                        <button class="action-btn" onclick="setMode('sepia')">စက္ကူဝါ</button>
+                        <button class="action-btn" onclick="setMode('dark')">ညဖတ်</button>
+                    </div>
+                </div>
+
+                <div class="setting-section-title">စာလုံးနှင့် စာသား အပြင်အဆင်</div>
+                <div class="setting-item">
+                    <span>စာလုံးပုံစံ (Font)</span>
+                    <div class="btn-group">
+                        <button class="action-btn" onclick="setFont('standard')">Pyidaungsu</button>
+                        <button class="action-btn" onclick="setFont('rounded')">Padauk</button>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <span>စာလုံးအကြီးအသေး</span>
+                    <div class="btn-group">
+                        <button class="action-btn small-btn" onclick="changeFontSize(-2)">-</button>
+                        <button class="action-btn small-btn" onclick="changeFontSize(2)">+</button>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <span>စာကြောင်းအကွာအဝေး</span>
+                    <div class="btn-group">
+                        <button class="action-btn" onclick="setLineHeight(1.5)">ကျဉ်း</button>
+                        <button class="action-btn" onclick="setLineHeight(1.9)">သင့်</button>
+                        <button class="action-btn" onclick="setLineHeight(2.4)">ကျယ်</button>
+                    </div>
+                </div>
+
+                <div class="setting-section-title">အထွေထွေ အသုံးပြုမှု</div>
+                <div class="setting-item" style="cursor:pointer;" onclick="clearLocalData()">
+                    <span>🕒 မှတ်တမ်းများ အကုန်ရှင်းရန်</span><span>❯</span>
+                </div>
+
+                <div class="setting-item" style="cursor:pointer;" onclick="alert('ရင်ငြိမ်းပန်း - ရင်တွင်းဖြစ်စာပေ v12.1\nError ပြင်ဆင်ပြီး ဗားရှင်း။')">
+                    <span>ℹ️ အက်ပ်အကြောင်း (About)</span><span>❯</span>
+                </div>
+
+                <button class="action-btn" style="background:#e74c3c; color:white; border:none; padding:12px; margin-top:5px;" onclick="toggleSettingsCard()">ပိတ်မည်</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // 🎯 Firebase Configuration (အစ်ကို့ရဲ့ ပုံထဲက Key အသစ်များဖြင့် မွမ်းမံထားပါသည်)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDY8o3RX38-Nl1RkKeOC6gHWtfKXPcaxas",
+            authDomain: "mgjen-8b4f5.firebaseapp.com",
+            projectId: "mgjen-8b4f5",
+            storageBucket: "mgjen-8b4f5.firebasestorage.app",
+            messagingSenderId: "68512708249",
+            appId: "1:68512708249:web:b6b1b6125dd255e9f6ba08", // ပုံဒုတိယတစ်ပုံအရ ပြောင်းလဲထားသော ID အသစ်
+            measurementId: "G-3D27YF08ZR" // ပုံဒုတိယတစ်ပုံအရ ပြောင်းလဲထားသော ID အသစ်
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentCategory = "";
+        let currentFontSize = 18;
+        let currentBookId = "";
+        let activeBooksData = {};
+
+        // 🚀 Realtime Admin Quote Sync 
+        function listenToAdminQuote() {
+            db.collection("app_config").doc("daily_quote").onSnapshot((doc) => {
+                if (doc.exists) {
+                    document.getElementById('adminQuoteText').innerHTML = doc.data().text;
+                } else {
+                    document.getElementById('adminQuoteText').innerText = "ရင်ဖွင့်စာသား မရှိသေးပါဗျာ။";
+                }
+            });
+        }
+        listenToAdminQuote();
+
+        // Load Books from Firestore
+        function loadBooks(category) {
+            currentCategory = category;
+            document.getElementById('listScreenCategoryName').innerText = "⚜️ " + category + "ကဏ္ဍ စာမူများ ⚜️";
+            const displayList = document.getElementById('booksDisplayList');
+            displayList.innerHTML = `<p style="text-align:center; padding:30px; color:#7f8c8d;">စာမူများ ရယူနေပါသည်...</p>`;
+
+            db.collection("books").where("cat", "==", category).onSnapshot((snap) => {
+                activeBooksData = {};
+                let html = "";
+                if(snap.empty) {
+                    displayList.innerHTML = `<p style="text-align:center; padding:30px; color:#95a5a6;">ဤကဏ္ဍတွင် စာမူများ မရှိသေးပါဗျာ။</p>`;
+                    return;
+                }
+                snap.forEach(doc => {
+                    const book = doc.data();
+                    activeBooksData[doc.id] = book;
+                    html += `<div class="book-list-item" onclick="openReader('${doc.id}')">
+                                <div class="item-title">${book.title}</div>
+                                <div class="item-author">✍️ ${book.author}</div>
+                             </div>`;
+                });
+                displayList.innerHTML = html;
+            }, (error) => {
+                displayList.innerHTML = `<p style="text-align:center; padding:30px; color:red;">Error: ${error.message}</p>`;
+            });
+            changeScreen('listScreen');
+        }
+
+        function openReader(id) {
+            const book = activeBooksData[id];
+            if(!book) return;
+            currentBookId = id;
+            
+            document.getElementById('readBookTitle').innerText = book.title;
+            document.getElementById('readBookAuthor').innerText = "ကလောင်အမည် - " + book.author;
+            document.getElementById('readerBody').innerText = book.content;
+            document.getElementById('readerBody').style.fontSize = currentFontSize + "px";
+
+            updateBookmarkIcon();
+            addToLocalList('history', {id: id, ...book});
+
+            document.getElementById('readerBackBtn').onclick = () => changeScreen('listScreen');
+            changeScreen('readScreen');
+        }
+
+        function toggleBookmark() {
+            let bookmarks = JSON.parse(localStorage.getItem('ynp_bookmarks') || '[]');
+            const index = bookmarks.findIndex(b => b.id === currentBookId);
+            if(index > -1) { bookmarks.splice(index, 1); } 
+            else { bookmarks.push({id: currentBookId, ...activeBooksData[currentBookId]}); }
+            localStorage.setItem('ynp_bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkIcon();
+        }
+
+        function updateBookmarkIcon() {
+            let bookmarks = JSON.parse(localStorage.getItem('ynp_bookmarks') || '[]');
+            document.getElementById('bookmarkBtn').innerText = bookmarks.some(b => b.id === currentBookId) ? "❤️" : "♡";
+        }
+
+        function showSavedBooks(type) {
+            const data = JSON.parse(localStorage.getItem('ynp_' + type) || '[]');
+            const displayList = document.getElementById('booksDisplayList');
+            document.getElementById('listScreenCategoryName').innerText = type === 'bookmarks' ? "⚜️ သိမ်းဆည်းထားသော စာမူများ ⚜️" : "⚜️ မကြာသေးမီက ဖတ်ခဲ့သမျှ ⚜️";
+            activeBooksData = {};
+            let html = "";
+            if(data.length === 0) { displayList.innerHTML = `<p style="text-align:center; padding:30px; color:#95a5a6;">စာရင်းမရှိသေးပါဗျာ။</p>`; } 
+            else {
+                data.slice().reverse().forEach(book => {
+                    activeBooksData[book.id] = book;
+                    html += `<div class="book-list-item" onclick="openReader('${book.id}')">
+                                <div class="item-title">${book.title}</div>
+                                <div class="item-author">✍️ ${book.author} (${book.cat})</div>
+                             </div>`;
+                });
+                displayList.innerHTML = html;
+            }
+            changeScreen('listScreen');
+        }
+
+        function addToLocalList(type, bookObj) {
+            let list = JSON.parse(localStorage.getItem('ynp_' + type) || '[]');
+            list = list.filter(item => item.id !== bookObj.id);
+            list.push(bookObj);
+            if(list.length > 50) list.shift();
+            localStorage.setItem('ynp_' + type, JSON.stringify(list));
+        }
+
+        function setMode(mode) {
+            document.body.classList.remove('mode-sepia', 'mode-dark');
+            if(mode !== 'normal') document.body.classList.add('mode-' + mode);
+        }
+        function setFont(font) { document.body.classList.toggle('font-rounded', font === 'rounded'); }
+        function changeFontSize(amount) {
+            currentFontSize += amount;
+            if(currentFontSize < 12) currentFontSize = 12;
+            document.getElementById('readerBody').style.fontSize = currentFontSize + "px";
+        }
+        function setLineHeight(val) { document.documentElement.style.setProperty('--line-height', val); }
+        
+        function clearLocalData() {
+            if(confirm("မှတ်တမ်းများအားလုံးကို ရှင်းလင်းမှာ သေချာပါသလား?")) {
+                localStorage.removeItem('ynp_history');
+                localStorage.removeItem('ynp_bookmarks');
+                location.reload();
+            }
+        }
+
+        function changeScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function toggleSettingsCard() { document.getElementById('settingsOverlay').classList.toggle('active'); }
+    </script>
+</body>
+</html>

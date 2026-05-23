@@ -64,7 +64,7 @@
             background: linear-gradient(135deg, #fdfbf1 0%, #f5ecd8 100%);
             border: 2px solid var(--primary-gold); border-radius: 15px;
             padding: 18px; margin-top: 25px; text-align: center;
-            position: relative; box-shadow: 0 4px 12px rgba(212,175,55,0.15);
+            position: relative; box-shadow: 0 4px 12 rgba(212,175,55,0.15);
         }
         .admin-featured-title { font-size: 13px; font-weight: bold; color: var(--royal-red); margin-bottom: 8px; text-decoration: underline; }
         .admin-featured-text { font-size: 15px; font-style: italic; color: #444; line-height: 1.6; white-space: pre-line; }
@@ -75,10 +75,10 @@
         .item-author { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
 
         /* Reader Screen */
-        .reader-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .reader-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
         .reader-box { background: var(--reader-bg); color: var(--reader-text); border: 1px solid var(--primary-gold); border-radius: 12px; padding: 20px; font-size: 17px; line-height: var(--line-height); text-align: justify; white-space: pre-line; overflow-y: auto; flex-grow: 1; }
 
-        /* 🎴 Settings Card (မူလတိုင်း ၁၀၀% ပြန်ဖော်ထားသည်) */
+        /* 🎴 Settings Card */
         .settings-card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 15px; }
         .settings-card-overlay.active { display: flex; }
         .settings-card { background: var(--white); width: 100%; max-height: 90vh; border: 3px solid var(--primary-gold); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
@@ -107,8 +107,13 @@
             <div style="width: 22px;"></div>
         </div>
 
+        <div style="width: 100%; height: 4px; background: transparent; position: sticky; top: 53px; z-index: 1001;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: var(--primary-gold); transition: width 0.1s;"></div>
+        </div>
+
         <div class="screen active" id="mainScreen">
             <div class="screen-category-title">⚜️ စာပေကဏ္ဍများ ရွေးချယ်ပါ ⚜️</div>
+
             <div class="kanoke-container">
                 <div class="kanoke-btn" onclick="loadBooks('ကဗျာ')">ကဗျာကဏ္ဍ</div>
                 <div class="kanoke-btn" onclick="loadBooks('ဝတ္ထု')">ဝတ္ထုရှည်/တိုကဏ္ဍ</div>
@@ -137,7 +142,10 @@
         <div class="screen" id="readScreen">
             <div class="reader-controls">
                 <button class="back-btn" id="readerBackBtn" style="margin-bottom:0;">⬅️ ပြန်ထွက်မည်</button>
-                <div id="bookmarkBtn" onclick="toggleBookmark()">♡</div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button class="action-btn" onclick="shareBook()" style="padding: 6px 15px; font-size: 13px; background: #2ecc71; border-color: #2ecc71; color: white;">🔗 မျှဝေမည်</button>
+                    <div id="bookmarkBtn" onclick="toggleBookmark()">♡</div>
+                </div>
             </div>
             <h3 id="readBookTitle" style="margin-bottom: 5px; color: var(--royal-red); font-size: 16px;"></h3>
             <p id="readBookAuthor" style="font-size: 12px; color: #7f8c8d; margin-bottom: 15px;"></p>
@@ -184,12 +192,12 @@
                     </div>
                 </div>
 
-                <div class="setting-section-title">အထွေထွေ အသုံးပြုမှု</div>
+                <div class="setting-section-title">...အထွေထွေ အသုံးပြုမှု</div>
                 <div class="setting-item" style="cursor:pointer;" onclick="clearLocalData()">
                     <span>🕒 မှတ်တမ်းများ အကုန်ရှင်းရန်</span><span>❯</span>
                 </div>
 
-                <div class="setting-item" style="cursor:pointer;" onclick="alert('ရင်ငြိမ်းပန်း - ရင်တွင်းဖြစ်စာပေ v12.1\nError ပြင်ဆင်ပြီး ဗားရှင်း။')">
+                <div class="setting-item" style="cursor:pointer;" onclick="alert('ရင်ငြိမ်းပန်း - ရင်တွင်းဖြစ်စာပေ v12.3\nအရိုးရှင်းဆုံးနှင့် အသန့်ရှင်းဆုံး ဒီဇိုင်းဗားရှင်း။')">
                     <span>ℹ️ အက်ပ်အကြောင်း (About)</span><span>❯</span>
                 </div>
 
@@ -202,15 +210,15 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-        // 🎯 Firebase Configuration (အစ်ကို့ရဲ့ ပုံထဲက Key အသစ်များဖြင့် မွမ်းမံထားပါသည်)
+        // 🎯 Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDY8o3RX38-Nl1RkKeOC6gHWtfKXPcaxas",
             authDomain: "mgjen-8b4f5.firebaseapp.com",
             projectId: "mgjen-8b4f5",
             storageBucket: "mgjen-8b4f5.firebasestorage.app",
             messagingSenderId: "68512708249",
-            appId: "1:68512708249:web:b6b1b6125dd255e9f6ba08", // ပုံဒုတိယတစ်ပုံအရ ပြောင်းလဲထားသော ID အသစ်
-            measurementId: "G-3D27YF08ZR" // ပုံဒုတိယတစ်ပုံအရ ပြောင်းလဲထားသော ID အသစ်
+            appId: "1:68512708249:web:b6b1b6125dd255e9f6ba08", 
+            measurementId: "G-3D27YF08ZR" 
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -271,12 +279,39 @@
             document.getElementById('readerBody').innerText = book.content;
             document.getElementById('readerBody').style.fontSize = currentFontSize + "px";
 
+            // Reset progress bar
+            document.getElementById('progressBar').style.width = "0%";
+
             updateBookmarkIcon();
             addToLocalList('history', {id: id, ...book});
 
-            document.getElementById('readerBackBtn').onclick = () => changeScreen('listScreen');
+            document.getElementById('readerBackBtn').onclick = () => {
+                changeScreen('listScreen');
+            };
             changeScreen('readScreen');
         }
+
+        // 🔗 စာမူမျှဝေရန် စနစ် (Share Function)
+        function shareBook() {
+            const title = document.getElementById('readBookTitle').innerText;
+            const author = document.getElementById('readBookAuthor').innerText;
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: `「${title}」\n${author}\n\n'ရင်ငြိမ်းပန်း - ရင်တွင်းဖြစ်စာပေ' အက်ပ်တွင် ဖတ်ရှုပါဦး။`,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                alert("Share စနစ်ကို ဤဖုန်းတွင် မပံ့ပိုးပါဗျာ။");
+            }
+        }
+
+        // 📈 စာဖတ်နှုန်း ရာခိုင်နှုန်းပြလိုင်းတွက်ချက်မှု
+        document.getElementById('readerBody').addEventListener('scroll', () => {
+            const reader = document.getElementById('readerBody');
+            const scrolled = (reader.scrollTop / (reader.scrollHeight - reader.clientHeight)) * 100;
+            document.getElementById('progressBar').style.width = scrolled + "%";
+        });
 
         function toggleBookmark() {
             let bookmarks = JSON.parse(localStorage.getItem('ynp_bookmarks') || '[]');

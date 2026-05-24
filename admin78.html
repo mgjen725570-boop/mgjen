@@ -12,9 +12,10 @@
             --royal-red-dark: #5c0000;
             --text-dark: #2c3e50; 
             --bg-gray: #f4f6f7;
+            --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pyidaungsu', sans-serif; }
-        body { background-color: var(--bg-gray); padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; gap: 20px; }
+        body { background-color: var(--bg-gray); padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; gap: 15px; }
         
         /* 📦 Main Container */
         .main-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
@@ -22,12 +23,13 @@
         /* 🎛️ Unified Top Dashboard Box */
         .dashboard-box { 
             background: #ffffff; 
-            border-radius: 18px; 
+            border-radius: 14px; 
             border: 2px solid var(--primary-gold); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
         .dashboard-title {
             background: linear-gradient(135deg, var(--royal-red-dark), var(--royal-red));
@@ -37,77 +39,90 @@
             font-weight: bold;
             text-align: center;
             border-bottom: 1px solid rgba(212,175,55,0.3);
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            line-height: 1.6;
         }
         .dashboard-actions {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1px;
-            background: rgba(212,175,55,0.2); /* Divider effect */
+            background: #e2e8f0;
+            gap: 1px; 
         }
         .dash-btn {
             background: #ffffff;
             color: var(--royal-red);
             border: none;
             padding: 14px 10px;
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.2s ease;
+            line-height: 1.6;
         }
         .dash-btn:hover { background: #fffdf9; color: var(--royal-red-dark); }
         .dash-btn.active { background: #fff9e6; color: var(--royal-red-dark); }
-        .dash-btn:first-child { border-right: 1px solid rgba(212,175,55,0.2); }
         
         /* 🔔 Sub-sections inside Dashboard */
         .dashboard-content { 
             display: none; 
-            padding: 20px; 
+            padding: 18px; 
             background: #fffdfa; 
             border-top: 1px solid rgba(212,175,55,0.2);
-            animation: fadeIn 0.25s ease-out;
+            animation: fadeIn 0.2s ease-out;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
         /* 📝 Main Post Box */
-        .admin-box { background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 3px solid var(--primary-gold); overflow: hidden; }
-        .admin-header { background: var(--royal-red); padding: 18px; text-align: center; border-bottom: 3px solid var(--primary-gold); }
-        .admin-header h2 { color: var(--primary-gold); font-size: 16px; letter-spacing: 0.5px; }
-        .admin-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+        .admin-box { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); border: 2px solid var(--primary-gold); overflow: hidden; width: 100%; }
+        .admin-header { background: var(--royal-red); padding: 15px; text-align: center; border-bottom: 2px solid var(--primary-gold); }
+        .admin-header h2 { color: var(--primary-gold); font-size: 15px; letter-spacing: 0.3px; line-height: 1.6; }
+        .admin-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
         
         /* 📋 Form Components */
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 13.5px; font-weight: bold; color: var(--royal-red); }
-        .form-control { width: 100%; padding: 11px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; transition: border-color 0.2s; color: var(--text-dark); }
-        .form-control:focus { outline: none; border-color: var(--primary-gold); }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 13px; font-weight: bold; color: var(--royal-red); line-height: 1.6; }
+        .form-control { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            transition: all 0.2s; 
+            color: var(--text-dark); 
+            line-height: 1.7;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary-gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
         
-        .submit-btn { background: var(--royal-red); color: var(--primary-gold); border: 2px solid var(--primary-gold); padding: 14px; border-radius: 12px; font-size: 14.5px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: all 0.2s; }
+        select.form-control { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23800000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; padding-right: 30px; }
+
+        .submit-btn { background: var(--royal-red); color: var(--primary-gold); border: 1px solid var(--primary-gold); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 4px; transition: all 0.2s; line-height: 1.6; }
         .submit-btn:hover { background: var(--royal-red-dark); transform: translateY(-1px); }
-        .status-msg { text-align: center; font-size: 13.5px; font-weight: bold; margin-top: 8px; display: none; }
+        .submit-btn:active { transform: translateY(0); }
+        .status-msg { text-align: center; font-size: 13px; font-weight: bold; margin-top: 6px; display: none; line-height: 1.6; }
         
         /* 🖥️ Full Screen Popup Overlay */
-        .fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); z-index: 1000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(3px); }
-        .story-list-box { width: 100%; max-width: 520px; height: 85vh; background: #ffffff; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); border: 3px solid #34495e; overflow: hidden; display: flex; flex-direction: column; animation: zoomIn 0.2s ease-out; }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+        .fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; padding: 12px; backdrop-filter: blur(4px); }
+        .story-list-box { width: 100%; max-width: 480px; height: 85vh; background: #ffffff; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); border: 2px solid #34495e; overflow: hidden; display: flex; flex-direction: column; animation: zoomIn 0.18s ease-out; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
         
-        .story-list-header { background: #34495e; padding: 16px; text-align: center; color: #ffffff; font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .close-overlay-btn { background: #e74c3c; color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .close-overlay-btn:hover { background: #c0392b; }
+        .story-list-header { background: #34495e; padding: 14px; text-align: center; color: #ffffff; font-size: 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; line-height: 1.6; }
+        .close-overlay-btn { background: #ef4444; color: #ffffff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .close-overlay-btn:hover { background: #dc2626; }
         
-        .story-list-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; background: #fafafa; }
-        .story-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid var(--royal-red); padding: 14px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.01); }
-        .story-item-title { font-weight: bold; color: var(--text-dark); font-size: 14.5px; }
-        .story-item-meta { font-size: 12px; color: #7f8c8d; }
-        .story-item-content { font-size: 13px; color: #555555; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; white-space: pre-wrap; max-height: 85px; overflow-y: auto; border: 1px inset #eee; }
+        .story-list-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; background: #f8fafc; }
+        .story-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid var(--royal-red); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .story-item-title { font-weight: bold; color: var(--text-dark); font-size: 14px; line-height: 1.6; }
+        .story-item-meta { font-size: 12px; color: #64748b; line-height: 1.5; }
+        .story-item-content { font-size: 13px; color: #334155; background: #f1f5f9; padding: 10px; border-radius: 6px; white-space: pre-wrap; max-height: 120px; overflow-y: auto; border: 1px solid #e2e8f0; line-height: 1.8; text-align: justify; }
         
-        .delete-btn { background: #c0392b; color: #ffffff; border: none; padding: 7px 12px; border-radius: 6px; font-size: 12.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; width: fit-content; align-self: flex-end; transition: background 0.2s; margin-top: 3px; }
-        .delete-btn:hover { background: #962d22; }
-        .no-data { text-align: center; color: #7f8c8d; font-size: 13.5px; padding: 25px; }
-        .filter-group { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: #eaeded; border-bottom: 1px solid #d5dbdb; font-size: 13.5px; font-weight: bold; color: #34495e; }
+        .delete-btn { background: #dc2626; color: #ffffff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; width: fit-content; align-self: flex-end; transition: background 0.2s; margin-top: 2px; }
+        .delete-btn:hover { background: #b91c1c; }
+        .no-data { text-align: center; color: #64748b; font-size: 13px; padding: 20px; line-height: 1.6; }
+        .filter-group { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: bold; color: #34495e; }
     </style>
 </head>
 <body>
@@ -120,14 +135,14 @@
                 <button class="dash-btn" id="quoteToggleBtn" onclick="toggleQuoteSection()">
                     📢 ရင်ဖွင့်ချက် ပြောင်းရန် 🔽
                 </button>
-                <button class="dash-btn" style="background: #ebf5fb; color: #2980b9;" onclick="openStoryManager()">
+                <button class="dash-btn" style="background: #f0f9ff; color: #0369a1;" onclick="openStoryManager()">
                     📚 စာမူများ စီမံဖျက်ရန် ➔
                 </button>
             </div>
             
             <div class="dashboard-content" id="quoteSectionArea">
                 <div class="form-group">
-                    <label>📝 ယနေ့အတွက် ရင်ဖွင့်ချက် /တင်မယ်</label>
+                    <label>📝 ယနေ့အတွက် ရင်ဖွင့်ချက် / ကောက်နုတ်ချက် စာသားသစ်</label>
                     <textarea class="form-control" id="adminQuoteInput" rows="3" placeholder="User App ရဲ့ Home Screen မှာ Live တိုက်ရိုက်ပြသမယ့် စာသားကို ရိုက်ထည့်ပါ..."></textarea>
                 </div>
                 <button class="submit-btn" style="background: #5c0000; margin-top: 10px; width: 100%;" onclick="updateAdminQuote()">📢 ရင်ဖွင့်ချက်စာသားကို Live ချိန်းမည်</button>
@@ -143,11 +158,11 @@
                 <div class="form-group">
                     <label>📌 စာပေကဏ္ဍ ရွေးချယ်ရန်</label>
                     <select class="form-control" id="bookCategory">
-                        <option value="ကဗျာ">ကဗျာ</option>
-                        <option value="ဝတ္ထု">ဝတ္ထုရှည်/တို</option>
-                        <option value="ဆောင်းပါး">သုတဆောင်းပါး</option>
-                        <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသ</option>
-                        <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အား</option>
+                        <option value="ကဗျာ">ကဗျာကဏ္ဍ</option>
+                        <option value="ဝတ္ထု">ဝတ္ထုရှည်/တိုကဏ္ဍ</option>
+                        <option value="ဆောင်းပါး">သုတဆောင်းပါးကဏ္ဍ</option>
+                        <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသကဏ္ဍ</option>
+                        <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အားကဏ္ဍ</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -179,11 +194,11 @@
                 <span>🔍 ကဏ္ဍစစ်ထုတ်ရန်:</span>
                 <select class="form-control" id="filterCategory" onchange="loadStoriesFromFirestore()" style="flex: 1; padding: 4px 10px; font-size: 13px;">
                     <option value="အားလုံး">စာမူအားလုံးကြည့်မည်</option>
-                    <option value="ကဗျာ">ကဗျာ</option>
-                    <option value="ဝတ္ထု">ဝတ္ထုရှည်/တို</option>
-                    <option value="ဆောင်းပါး">သုတဆောင်းပါး</option>
-                    <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသ</option>
-                    <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အား</option>
+                    <option value="ကဗျာ">ကဗျာကဏ္ဍ</option>
+                    <option value="ဝတ္ထု">ဝတ္ထုရှည်/တိုကဏ္ဍ</option>
+                    <option value="ဆောင်းပါး">သုတဆောင်းပါးကဏ္ဍ</option>
+                    <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသကဏ္ဍ</option>
+                    <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အားကဏ္ဍ</option>
                 </select>
             </div>
             <div class="story-list-body" id="storiesContainer">
@@ -282,7 +297,7 @@
             }
 
             statusDiv.style.color = "#7f8c8d";
-            statusDiv.innerText = "⏳ ရင်ဖွင့်ချက် စာသားကို ချိန်းပေးနေပါသည်...";
+            statusDiv.innerText = "⏳ ရင်ဖွင့်ချက် စာသားကို ချიန်းပေးနေပါသည်...";
             statusDiv.style.display = "block";
 
             db.collection("app_config").doc("daily_quote").set({
@@ -334,7 +349,7 @@
                             <div class="story-item-title">📌 [${data.cat}] ${data.title}</div>
                             <div class="story-item-meta">✍️ ကလောင်: <b>${data.author}</b></div>
                             <div class="story-item-content">${data.content}</div>
-                            <button class="delete-btn" onclick="deleteStoryFromFirestore('${docId}', '${data.title.replace(/'/g, "\\'")}')">
+                            <button class="delete-btn" onclick="deleteStoryFromFirestore('${docId}', '${data.title.replace(/'/g, "\\\\'")}')">
                                 🗑️ စာမူအား အပြီးဖျက်မည်
                             </button>
                         </div>

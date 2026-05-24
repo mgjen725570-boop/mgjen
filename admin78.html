@@ -6,73 +6,189 @@
     <title>ရင်ငြိမ်းပန်း - Admin Panel</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap">
     <style>
-        :root { --primary-gold: #d4af37; --royal-red: #800000; --text-dark: #2c3e50; }
+        :root { 
+            --primary-gold: #d4af37; 
+            --royal-red: #800000; 
+            --royal-red-dark: #5c0000;
+            --text-dark: #2c3e50; 
+            --bg-gray: #f4f6f7;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pyidaungsu', sans-serif; }
-        body { background-color: #f2f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 100vh; }
-        .admin-box { width: 100%; max-width: 500px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 3px solid var(--primary-gold); overflow: hidden; }
-        .admin-header { background: var(--royal-red); padding: 20px; text-align: center; border-bottom: 3px solid var(--primary-gold); }
-        .admin-header h2 { color: var(--primary-gold); font-size: 18px; }
-        .admin-body { padding: 25px; display: flex; flex-direction: column; gap: 16px; }
+        body { background-color: var(--bg-gray); padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; gap: 20px; }
+        
+        /* 📦 Main Container */
+        .main-container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* 🎛️ Unified Top Dashboard Box */
+        .dashboard-box { 
+            background: #ffffff; 
+            border-radius: 18px; 
+            border: 2px solid var(--primary-gold); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-title {
+            background: linear-gradient(135deg, var(--royal-red-dark), var(--royal-red));
+            color: var(--primary-gold);
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+            letter-spacing: 0.5px;
+        }
+        .dashboard-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: rgba(212,175,55,0.2); /* Divider effect */
+        }
+        .dash-btn {
+            background: #ffffff;
+            color: var(--royal-red);
+            border: none;
+            padding: 14px 10px;
+            font-size: 13.5px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .dash-btn:hover { background: #fffdf9; color: var(--royal-red-dark); }
+        .dash-btn.active { background: #fff9e6; color: var(--royal-red-dark); }
+        .dash-btn:first-child { border-right: 1px solid rgba(212,175,55,0.2); }
+        
+        /* 🔔 Sub-sections inside Dashboard */
+        .dashboard-content { 
+            display: none; 
+            padding: 20px; 
+            background: #fffdfa; 
+            border-top: 1px solid rgba(212,175,55,0.2);
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 📝 Main Post Box */
+        .admin-box { background: #ffffff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 3px solid var(--primary-gold); overflow: hidden; }
+        .admin-header { background: var(--royal-red); padding: 18px; text-align: center; border-bottom: 3px solid var(--primary-gold); }
+        .admin-header h2 { color: var(--primary-gold); font-size: 16px; letter-spacing: 0.5px; }
+        .admin-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+        
+        /* 📋 Form Components */
         .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 14px; font-weight: bold; color: var(--royal-red); }
-        .form-control { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; }
-        .submit-btn { background: var(--royal-red); color: var(--primary-gold); border: 2px solid var(--primary-gold); padding: 15px; border-radius: 12px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .status-msg { text-align: center; font-size: 14px; font-weight: bold; margin-top: 10px; display: none; }
+        .form-group label { font-size: 13.5px; font-weight: bold; color: var(--royal-red); }
+        .form-control { width: 100%; padding: 11px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; transition: border-color 0.2s; color: var(--text-dark); }
+        .form-control:focus { outline: none; border-color: var(--primary-gold); }
         
-        /* 🔔 ရင်ဖွင့်ချက် Toggle ခလုတ်နှင့် Form ပုံစံသစ် */
-        .toggle-section { background: #ffffff; border-radius: 15px; border: 2px solid var(--primary-gold); width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .toggle-trigger-btn { background: #5c0000; color: var(--primary-gold); width: 100%; padding: 15px; text-align: center; font-size: 15px; font-weight: bold; cursor: pointer; border: none; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .toggle-trigger-btn::before { content: "⚜️"; }
-        .toggle-trigger-btn::after { content: " 🔽"; }
-        .toggle-trigger-btn.active::after { content: " 🔼"; }
+        .submit-btn { background: var(--royal-red); color: var(--primary-gold); border: 2px solid var(--primary-gold); padding: 14px; border-radius: 12px; font-size: 14.5px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: all 0.2s; }
+        .submit-btn:hover { background: var(--royal-red-dark); transform: translateY(-1px); }
+        .status-msg { text-align: center; font-size: 13.5px; font-weight: bold; margin-top: 8px; display: none; }
         
-        .toggle-content { padding: 20px; display: none; flex-direction: column; gap: 15px; background: #fffdf9; border-top: 1px solid rgba(212,175,55,0.3); animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        /* 🖥️ Full Screen Popup Overlay */
+        .fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); z-index: 1000; justify-content: center; align-items: center; padding: 15px; backdrop-filter: blur(3px); }
+        .story-list-box { width: 100%; max-width: 520px; height: 85vh; background: #ffffff; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); border: 3px solid #34495e; overflow: hidden; display: flex; flex-direction: column; animation: zoomIn 0.2s ease-out; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+        
+        .story-list-header { background: #34495e; padding: 16px; text-align: center; color: #ffffff; font-size: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .close-overlay-btn { background: #e74c3c; color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .close-overlay-btn:hover { background: #c0392b; }
+        
+        .story-list-body { padding: 15px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; background: #fafafa; }
+        .story-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid var(--royal-red); padding: 14px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.01); }
+        .story-item-title { font-weight: bold; color: var(--text-dark); font-size: 14.5px; }
+        .story-item-meta { font-size: 12px; color: #7f8c8d; }
+        .story-item-content { font-size: 13px; color: #555555; background: #f8f9fa; padding: 8px 12px; border-radius: 6px; white-space: pre-wrap; max-height: 85px; overflow-y: auto; border: 1px inset #eee; }
+        
+        .delete-btn { background: #c0392b; color: #ffffff; border: none; padding: 7px 12px; border-radius: 6px; font-size: 12.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; width: fit-content; align-self: flex-end; transition: background 0.2s; margin-top: 3px; }
+        .delete-btn:hover { background: #962d22; }
+        .no-data { text-align: center; color: #7f8c8d; font-size: 13.5px; padding: 25px; }
+        .filter-group { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: #eaeded; border-bottom: 1px solid #d5dbdb; font-size: 13.5px; font-weight: bold; color: #34495e; }
     </style>
 </head>
 <body>
 
-    <div class="toggle-section">
-        <button class="toggle-trigger-btn" id="toggleBtn" onclick="toggleQuoteForm()">ရင်ဖွင့်ချက်စာသားအသစ် ပြောင်းလဲရန်</button>
-        <div class="toggle-content" id="quoteFormContent">
-            <div class="form-group">
-                <label>✨ ယနေ့အတွက် ရင်ဖွင့်ချက် / ကောက်နုတ်ချက် စာသား</label>
-                <textarea class="form-control" id="adminQuoteInput" rows="4" placeholder="User App ရဲ့ Home Screen မှာ ချက်ချင်းပေါ်မယ့် စာသားကို ရိုက်ထည့်ပါ..."></textarea>
+    <div class="main-container">
+
+        <div class="dashboard-box">
+            <div class="dashboard-title">✨ ရင်ငြိမ်းပန်း - ကြီးကြပ်မှုဒိုင်ခွက် (Control Dashboard)</div>
+            <div class="dashboard-actions">
+                <button class="dash-btn" id="quoteToggleBtn" onclick="toggleQuoteSection()">
+                    📢 ရင်ဖွင့်ချက် ပြောင်းရန် 🔽
+                </button>
+                <button class="dash-btn" style="background: #ebf5fb; color: #2980b9;" onclick="openStoryManager()">
+                    📚 စာမူများ စီမံဖျက်ရန် ➔
+                </button>
             </div>
-            <button class="submit-btn" style="background: #5c0000; margin-top: 0;" onclick="updateAdminQuote()">📢 ရင်ဖွင့်ချက်စာသားကို Live ချိန်းမည်</button>
-            <div class="status-msg" id="quoteStatusMessage"></div>
+            
+            <div class="dashboard-content" id="quoteSectionArea">
+                <div class="form-group">
+                    <label>📝 ယနေ့အတွက် ရင်ဖွင့်ချက် /တင်မယ်</label>
+                    <textarea class="form-control" id="adminQuoteInput" rows="3" placeholder="User App ရဲ့ Home Screen မှာ Live တိုက်ရိုက်ပြသမယ့် စာသားကို ရိုက်ထည့်ပါ..."></textarea>
+                </div>
+                <button class="submit-btn" style="background: #5c0000; margin-top: 10px; width: 100%;" onclick="updateAdminQuote()">📢 ရင်ဖွင့်ချက်စာသားကို Live ချိန်းမည်</button>
+                <div class="status-msg" id="quoteStatusMessage"></div>
+            </div>
         </div>
+
+        <div class="admin-box">
+            <div class="admin-header">
+                <h2>⚜️ စာမူအသစ် လှမ်းတင်ခန်း (Post Editor)</h2>
+            </div>
+            <div class="admin-body">
+                <div class="form-group">
+                    <label>📌 စာပေကဏ္ဍ ရွေးချယ်ရန်</label>
+                    <select class="form-control" id="bookCategory">
+                        <option value="ကဗျာ">ကဗျာ</option>
+                        <option value="ဝတ္ထု">ဝတ္ထုရှည်/တို</option>
+                        <option value="ဆောင်းပါး">သုတဆောင်းပါး</option>
+                        <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသ</option>
+                        <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အား</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>📝 စာအုပ် / စာမူ ခေါင်းစဉ်</label>
+                    <input type="text" class="form-control" id="bookTitle" placeholder="စာမူခေါင်းစဉ် ရိုက်ထည့်ပါ...">
+                </div>
+                <div class="form-group">
+                    <label>✍️ ကလောင်အမည် (စာရေးဆရာ)</label>
+                    <input type="text" class="form-control" id="bookAuthor" placeholder="ကလောင်အမည် ရိုက်ထည့်ပါ...">
+                </div>
+                <div class="form-group">
+                    <label>📖 စာသားအကြောင်းအရာ အပြည့်အစုံ</label>
+                    <textarea class="form-control" id="bookContent" rows="6" placeholder="စာသားများကို ဤနေရာတွင် စိတ်ကြိုက် ရိုက်ထည့်ပါ..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="uploadStoryToFirestore()">🚀 အွန်လိုင်းသို့ စာမူလှမ်းတင်မည်</button>
+                <div class="status-msg" id="statusMessage"></div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="admin-box">
-        <div class="admin-header">
-            <h2>⚜️ ရင်ငြိမ်းပန်း - Admin Panel (စာမူတင်ခန်း)</h2>
-        </div>
-        <div class="admin-body">
-            <div class="form-group">
-                <label>📌 စာပေကဏ္ဍ ရွေးချယ်ရန်</label>
-                <select class="form-control" id="bookCategory">
-                    <option value="ကဗျာ">ကဗျာကဏ္ဍ</option>
-                    <option value="ဝတ္ထု">ဝတ္ထုရှည်/တိုကဏ္ဍ</option>
-                    <option value="ဆောင်းပါး">သုတဆောင်းပါးကဏ္ဍ</option>
-                    <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသကဏ္ဍ</option>
-                    <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အားကဏ္ဍ</option>
+    <div class="fullscreen-overlay" id="managerOverlay">
+        <div class="story-list-box">
+            <div class="story-list-header">
+                <span>📚 တင်ထားပြီးသော စာမူများ စီမံခန်း</span>
+                <button class="close-overlay-btn" onclick="closeStoryManager()">✕ ပိတ်မည်</button>
+            </div>
+            <div class="filter-group">
+                <span>🔍 ကဏ္ဍစစ်ထုတ်ရန်:</span>
+                <select class="form-control" id="filterCategory" onchange="loadStoriesFromFirestore()" style="flex: 1; padding: 4px 10px; font-size: 13px;">
+                    <option value="အားလုံး">စာမူအားလုံးကြည့်မည်</option>
+                    <option value="ကဗျာ">ကဗျာ</option>
+                    <option value="ဝတ္ထု">ဝတ္ထုရှည်/တို</option>
+                    <option value="ဆောင်းပါး">သုတဆောင်းပါး</option>
+                    <option value="ဟာသ">ရယ်မောဖွယ်ရာ ဟာသ</option>
+                    <option value="စိတ်ဓာတ်ခွန်အား">စိတ်ဓာတ်ခွန်အား</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>📝 စာအုပ် / စာမူ ခေါင်းစဉ်</label>
-                <input type="text" class="form-control" id="bookTitle" placeholder="စာမူခေါင်းစဉ် ရိုက်ထည့်ပါ...">
+            <div class="story-list-body" id="storiesContainer">
+                <div class="no-data">⏳ စာမူများအား Cloud Firestore ထဲမှ ဆွဲယူနေပါသည်...</div>
             </div>
-            <div class="form-group">
-                <label>✍️ ကလောင်အမည် (စာရေးဆရာ)</label>
-                <input type="text" class="form-control" id="bookAuthor" placeholder="ကလောင်အမည် ရိုက်ထည့်ပါ...">
-            </div>
-            <div class="form-group">
-                <label>📖 စာသားအကြောင်းအရာ အပြည့်အစုံ</label>
-                <textarea class="form-control" id="bookContent" rows="6" placeholder="စာသားများကို ဤနေရာတွင် ရိုက်ထည့်ပါ..."></textarea>
-            </div>
-            <button class="submit-btn" onclick="uploadStoryToFirestore()">🚀 အွန်လိုင်းသို့ စာမူလှမ်းတင်မည်</button>
-            <div class="status-msg" id="statusMessage"></div>
         </div>
     </div>
 
@@ -94,18 +210,30 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 🔄 ရင်ဖွင့်ချက်တင်တဲ့ Form ကို ဖွင့်/ပိတ်ပေးမည့် Function
-        function toggleQuoteForm() {
-            const formContent = document.getElementById('quoteFormContent');
-            const toggleBtn = document.getElementById('toggleBtn');
+        // 👁️ ရင်ဖွင့်ချက် ကဏ္ဍကို Dropdown ပုံစံ ဖွင့်/ပိတ်လုပ်ခြင်း
+        function toggleQuoteSection() {
+            const area = document.getElementById('quoteSectionArea');
+            const btn = document.getElementById('quoteToggleBtn');
             
-            if (formContent.style.display === "flex") {
-                formContent.style.display = "none";
-                toggleBtn.classList.remove('active');
+            if (area.style.display === "block") {
+                area.style.display = "none";
+                btn.classList.remove('active');
+                btn.innerText = "📢 ရင်ဖွင့်ချက် ပြောင်းရန် 🔽";
             } else {
-                formContent.style.display = "flex";
-                toggleBtn.classList.add('active');
+                area.style.display = "block";
+                btn.classList.add('active');
+                btn.innerText = "📢 ရင်ဖွင့်ချက် ပြောင်းရန် 🔼";
             }
+        }
+
+        // 👁️ စာမူစီမံခန်း မျက်နှာပြင် Popup ကို ဖွင့်/ပိတ်လုပ်ခြင်း
+        function openStoryManager() {
+            document.getElementById('managerOverlay').style.display = "flex";
+            loadStoriesFromFirestore();
+        }
+
+        function closeStoryManager() {
+            document.getElementById('managerOverlay').style.display = "none";
         }
 
         // (၁) မူရင်း စာမူတင်ခြင်း လုပ်ဆောင်ချက်
@@ -133,7 +261,7 @@
             })
             .then(() => {
                 statusDiv.style.color = "#27ae60";
-                statusDiv.innerText = "🎉 '" + title + "' စာမူကို Cloud Firestore ထဲသို့ အောင်မြင်စွာ တင်ပြီးပါပြီဗျာ။";
+                statusDiv.innerText = "🎉 '" + title + "' စာမူကို အောင်မြင်စွာ တင်ပြီးပါပြီဗျာ။";
                 document.getElementById('bookTitle').value = "";
                 document.getElementById('bookAuthor').value = "";
                 document.getElementById('bookContent').value = "";
@@ -165,16 +293,76 @@
                 statusDiv.style.color = "#27ae60";
                 statusDiv.innerText = "📢 ရင်ဖွင့်ချက်စာသား ပြောင်းလဲမှု အောင်မြင်ပါပြီဗျာ။";
                 document.getElementById('adminQuoteInput').value = "";
-                // အောင်မြင်သွားရင် Form ကို ၃ စက္ကန့်အကြာမှာ အလိုအလျောက် ပြန်ပိတ်ပေးမည်
                 setTimeout(() => {
-                    toggleQuoteForm();
+                    toggleQuoteSection();
                     statusDiv.style.display = "none";
-                }, 2000);
+                }, 1800);
             })
             .catch((error) => {
                 statusDiv.style.color = "#c0392b";
                 statusDiv.innerText = "❌ ချိန်းရမအောင်မြင်ပါ- " + error.message;
             });
+        }
+
+        // (၃) တင်ထားသော စာမူများအားလုံးကို ဆွဲထုတ်ပြသပေးမည့် လုပ်ဆောင်ချက်
+        function loadStoriesFromFirestore() {
+            const container = document.getElementById('storiesContainer');
+            const selectedFilter = document.getElementById('filterCategory').value;
+            container.innerHTML = '<div class="no-data">⏳ စာမူများကို စစ်ဆေးနေပါသည်...</div>';
+
+            let query = db.collection("books").orderBy("timestamp", "desc");
+
+            if (selectedFilter !== "အားလုံး") {
+                query = db.collection("books").where("cat", "==", selectedFilter);
+            }
+
+            query.get()
+            .then((querySnapshot) => {
+                container.innerHTML = "";
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div class="no-data">📭 ဤကဏ္ဍတွင် မည်သည့်စာမူမျှ တင်ထားခြင်းမရှိသေးပါဗျာ။</div>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const docId = doc.id;
+
+                    const storyHTML = `
+                        <div class="story-item" id="item-${docId}">
+                            <div class="story-item-title">📌 [${data.cat}] ${data.title}</div>
+                            <div class="story-item-meta">✍️ ကလောင်: <b>${data.author}</b></div>
+                            <div class="story-item-content">${data.content}</div>
+                            <button class="delete-btn" onclick="deleteStoryFromFirestore('${docId}', '${data.title.replace(/'/g, "\\'")}')">
+                                🗑️ စာမူအား အပြီးဖျက်မည်
+                            </button>
+                        </div>
+                    `;
+                    container.innerHTML += storyHTML;
+                });
+            })
+            .catch((error) => {
+                console.error("Error loading stories: ", error);
+                container.innerHTML = '<div class="no-data" style="color:#c0392b;">❌ စာမူများ ဆွဲယူခြင်း မအောင်မြင်ပါ- ' + error.message + '</div>';
+            });
+        }
+
+        // (၄) ရွေးချယ်ထားသော စာမူအား အပြီးဖျက်ပေးမည့် လုပ်ဆောင်ချက်
+        function deleteStoryFromFirestore(docId, title) {
+            if (confirm("⚠️ ပြန်ယူလို့မရတော့ပါ! '" + title + "' စာမူကို အွန်လိုင်းဒေတာဘေ့စ် (User App) ထဲကနေ အပြီးအပိုင် ဖြုတ်ချဖျက်ပစ်မှာ သေချာပါသလားဗျာ?")) {
+                
+                db.collection("books").doc(docId).delete()
+                .then(() => {
+                    alert("🗑️ '" + title + "' စာမူကို ဒေတာဘေ့စ်ထဲမှ အောင်မြင်စွာ ဖျက်ပစ်ပြီးပါပြီဗျာ။");
+                    const element = document.getElementById("item-" + docId);
+                    if (element) element.remove();
+                    loadStoriesFromFirestore();
+                })
+                .catch((error) => {
+                    alert("❌ ဖျက်ရတာ မအောင်မြင်ပါ- " + error.message);
+                });
+            }
         }
     </script>
 </body>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ထိုင်းရောက်လုပ်သား သက်တမ်းခြေရာခံစနစ် (ဥပဒေလမ်းညွှန်ဗားရှင်း)</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #1e3a8a;   /* အပြာရင့်ရောင် */
+            --secondary-color: #3b82f6; /* အပြာနုရောင် */
+            --bg-gray: #f1f5f9;         /* နောက်ခံပြာနုရောင် */
+            --text-dark: #1e293b;       /* စာသားအမည်းရောင် */
+            --white: #ffffff;
+            --color-safe: #10b981;      /* အစိမ်းရောင် (စိတ်ချရ) */
+            --color-warning: #f59e0b;   /* အဝါရောင် (သတိပြုရန်) */
+            --color-danger: #ef4444;    /* အနီရောင် (အရေးကြီး/ကုန်ပြီ) */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pyidaungsu', sans-serif; }
+        body { background-color: var(--bg-gray); color: var(--text-dark); display: flex; justify-content: center; min-height: 100vh; }
+
+        /* အက်ပ်တစ်ခုလုံး၏ အနံအကန့်အသတ် */
+        .app-container {
+            width: 100%; max-width: 480px; background: var(--white); min-height: 100vh;
+            display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        /* အပေါ်ပိုင်း ခေါင်းစဉ်ဘား */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color), #0f172a); color: var(--white);
+            padding: 16px; text-align: center; border-bottom: 4px solid #facc15; position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .app-header h1 { font-size: 16px; font-weight: bold; flex-grow: 1; text-align: center; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; display: none; }
+
+        /* 🧭 အောက်ခြေ စာမျက်နှာကူးပြောင်းရန်ဘား */
+        .nav-bar {
+            position: fixed; bottom: 0; max-width: 480px; width: 100%; background: #ffffff;
+            display: flex; justify-content: space-around; border-top: 1px solid #e2e8f0; padding: 10px 0; z-index: 100;
+            display: none; /* အကောင့်ဝင်ပြီးမှပြမည် */
+        }
+        .nav-item {
+            border: none; background: transparent; color: #64748b; font-size: 13px; font-weight: bold;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 33.33%;
+        }
+        .nav-item.active { color: var(--secondary-color); }
+        .nav-item span { font-size: 20px; }
+
+        /* စာမျက်နှာ Screens များ */
+        .screen { display: none; flex-direction: column; flex-grow: 1; padding: 16px 16px 80px 16px; animation: fadeIn 0.2s ease-out; }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* 🔑 Auth Box (လော့ဂ်အင်မျက်နှာပြင်ဒီဇိုင်း) */
+        .auth-box { background: var(--white); padding: 10px 5px; display: flex; flex-direction: column; gap: 14px; }
+        .auth-title { font-size: 18px; font-weight: bold; color: var(--primary-color); text-align: center; margin-bottom: 5px; }
+        .auth-toggle { font-size: 13.5px; text-align: center; color: var(--secondary-color); cursor: pointer; margin-top: 10px; text-decoration: underline; font-weight: bold; }
+
+        /* 🗂️ သက်တမ်းပြကတ်ပြားများ */
+        .card {
+            background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 14px;
+            border: 1px solid #e2e8f0; position: relative; overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--status-color, #cbd5e1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .card-title { font-size: 14px; font-weight: bold; color: #334155; }
+        .card-status-badge { font-size: 11px; font-weight: bold; padding: 2px 10px; border-radius: 20px; color: #fff; background: var(--status-color, #cbd5e1); }
+        .countdown-display { font-size: 14px; font-weight: bold; color: var(--status-color, var(--text-dark)); text-align: left; margin-top: 8px; background: #f8fafc; padding: 8px 12px; border-radius: 8px; border: 1px dashed #cbd5e1; }
+
+        /* ⚠️ ဥပဒေစည်းမျဉ်း သတိပေးချက်ကတ်ပြား ဒီဇိုင်းအသစ် */
+        .law-box { background: #fffaf0; border: 1px solid #fcd34d; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(245,158,11,0.05); }
+        .law-title { font-size: 14px; font-weight: bold; color: #b45309; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; border-bottom: 1px dashed #fcd34d; padding-bottom: 6px; }
+        .law-text { font-size: 13px; line-height: 1.7; color: #451a03; text-align: justify; }
+        .law-highlight { color: #dc2626; font-weight: bold; background: #fee2e2; padding: 1px 4px; border-radius: 4px; }
+        .law-section-badge { display: inline-block; background: #78350f; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-top: 6px; }
+
+        /* 📝 ဖြည့်သွင်းစနစ် Form */
+        .form-container { background: #f8fafc; border: 1px solid #cbd5e1; padding: 16px; border-radius: 12px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--primary-color); }
+        .form-group input { width: 100%; padding: 11px; font-size: 14px; border: 1.5px solid #cbd5e1; border-radius: 6px; outline: none; background: #ffffff; }
+        .form-group input:focus { border-color: var(--secondary-color); }
+
+        /* ခလုတ်များ */
+        .btn { background: var(--secondary-color); color: var(--white); border: none; padding: 12px; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-success { background: var(--color-safe); }
+        .loading-text { font-size: 13px; color: var(--secondary-color); text-align: center; font-weight: bold; display: none; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="app-header">
+            <div style="width: 60px;"></div> <h1 id="headerTitle">🔒 အကောင့်ဝင်ရန်</h1>
+            <button class="logout-btn" id="logoutBtn" onclick="handleLogout()">ထွက်ရန် 🚪</button>
+        </div>
+
+        <div class="screen active" id="scrAuth">
+            <div class="auth-box">
+                <h2 class="auth-title" id="authBoxTitle">🔐 လော့ဂ်အင်ဝင်ရန်</h2>
+                <p style="font-size:12px; color:#64748b; text-align:center; margin-bottom:10px;">တစ်ဦးချင်းစီ၏ သက်တမ်းဒေတာများကို လုံခြုံစွာ သီးသန့်သိမ်းဆည်းပေးမည့် နေရာဖြစ်ပါသည်။</p>
+                
+                <div class="form-group">
+                    <label>📧 အီးမေးလ်လိပ်စာ (Email Address)</label>
+                    <input type="email" id="authEmail" placeholder="ဥပမာ - worker123@gmail.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>🔑 စကားဝှက် (Password)</label>
+                    <input type="password" id="authPassword" placeholder="အနည်းဆုံး စာလုံး ၆ လုံး">
+                </div>
+
+                <div class="loading-text" id="authLoading">⏳ ဒေတာများကို စစ်ဆေးနေပါသည်... ခေတ္တစောင့်ပါ။</div>
+                <button class="btn" id="authBtn" onclick="handleAuth()">အကောင့်ဝင်မည်</button>
+                
+                <div class="auth-toggle" id="authToggleText" onclick="toggleAuthMode()">အကောင့်အသစ်မရှိသေးပါက ဤနေရာတွင် ဖွင့်ပါ 📝</div>
+            </div>
+        </div>
+
+        <div class="screen" id="scrDashboard">
+            
+            <div class="card" id="passportCard">
+                <div class="card-header">
+                    <span class="card-title">🛂 ပတ်စပို့ သက်တမ်း (Passport)</span>
+                    <span class="card-status-badge" id="passportBadge">-</span>
+                </div>
+                <div style="font-size:12px; color:#64748b;">ကုန်ဆုံးမည့်ရက်စွဲ - <span id="passportDateText">-</span></div>
+                <div class="countdown-display" id="passportCountdown">-</div>
+            </div>
+
+            <div class="card" id="workpermitCard">
+                <div class="card-header">
+                    <span class="card-title">💼 ဝက်ပါမစ် သက်တမ်း (Work Permit)</span>
+                    <span class="card-status-badge" id="workpermitBadge">-</span>
+                </div>
+                <div style="font-size:12px; color:#64748b;">ကုန်ဆုံးမည့်ရက်စွဲ - <span id="workpermitDateText">-</span></div>
+                <div class="countdown-display" id="workpermitCountdown">-</div>
+            </div>
+
+            <div class="card" id="report90Card">
+                <div class="card-header">
+                    <span class="card-title">📆 ရက် ၉၀ သတင်းပို့ရန် (90 Days Report)</span>
+                    <span class="card-status-badge" id="report90Badge">-</span>
+                </div>
+                <div style="font-size:12px; color:#64748b;">သတင်းပို့ရမည့်ရက်စွဲ - <span id="report90DateText">-</span></div>
+                <div class="countdown-display" id="report90Countdown">-</div>
+            </div>
+
+            <div class="card" id="pinkcardCard">
+                <div class="card-header">
+                    <span class="card-title">🪪 ပန်းရောင်ကတ် သက်တမ်း (Pink Card)</span>
+                    <span class="card-status-badge" id="pinkcardBadge">-</span>
+                </div>
+                <div style="font-size:12px; color:#64748b;">ကုန်ဆုံးမည့်ရက်စွဲ - <span id="pinkcardDateText">-</span></div>
+                <div class="countdown-display" id="pinkcardCountdown">-</div>
+            </div>
+
+        </div>
+
+        <div class="screen" id="scrLawNotices">
+            
+            <div class="law-box">
+                <div class="law-title">⚠️ ရက် ၉၀ သတင်းပို့ခြင်းဆိုင်ရာ စည်းမျဉ်း (NOTICE)</div>
+                <div class="law-text">
+                    နိုင်ငံခြားသားတစ်ဦးသည် ထိုင်းနိုင်ငံအတွင်း <span class="law-highlight">ရက်ပေါင်း ၉၀ ထက်ကျော်လွန်၍</span> နေထိုင်ပါက မိမိနေထိုင်ရာ ဒေသရှိ လူဝင်မှုကြီးကြပ်ရေးရုံး (Immigration Office) သို့ <span class="law-highlight">ရက် ၉၀ ပြည့်တိုင်း</span> မပျက်မကွက် သတင်းပို့ အကြောင်းကြားရမည် ဖြစ်သည်။
+                </div>
+            </div>
+
+            <div class="law-box">
+                <div class="law-title">🚨 ပျက်ကွက်ပါက အရေးယူမည့် ပြစ်ဒဏ် (PENALTY)</div>
+                <div class="law-text">
+                    အကြင်သူသည် ရက် ၉၀ သတင်းပို့ရန် ပျက်ကွက်ပါက သို့မဟုတ် စည်းကမ်းချက်များကို မလိုက်နာပါက <span class="law-highlight">ဒဏ်ငွေ ဘတ် ၅,၀၀၀ (5,000.- Baht) ထက်မပိုသော</span> ပြစ်ဒဏ်ကို ချမှတ်ခြင်း ခံရမည်။
+                </div>
+                <span class="law-section-badge">IMMIGRATION ACT B.E. 2522 (SECTION 76)</span>
+            </div>
+
+            <div class="law-box">
+                <div class="law-title">📈 ရက်လွန်ကူးခြင်းအတွက် ထပ်တိုးဒဏ်ငွေ</div>
+                <div class="law-text">
+                    ထို့အပြင် သတ်မှတ်ရက်ထက် ကျော်လွန်သွားပြီးနောက် ဥပဒေအတိုင်း လိုက်နာဆောင်ရွက်ခြင်း မရှိသေးသမျှ ကာလပတ်လုံး <span class="law-highlight">နောက်ကျသည့် ရက်အလိုက် တစ်ရက်လျှင် ဘတ် ၂၀၀ (200.- Baht) စီ</span> ထပ်တိုးဒဏ်ငွေ ထပ်မံပေးဆောင်ရမည် ဖြစ်သည်။
+                </div>
+            </div>
+
+            <div class="law-box">
+                <div class="law-title">🛂 ခရီးသည်များနှင့် အလုပ်သမားများ သတိပြုရန်</div>
+                <div class="law-text">
+                    ၁။ ခရီးသည်အားလုံးသည် မိမိတို့၏ <span class="law-highlight">TM.6 ကတ် (ဆိုက်ရောက်ကတ်)</span> ကို ပြည့်စုံစွာ ဖြည့်စွက်ထားရမည်။<br>
+                    ၂။ ခရီးသည်သည် မိမိ၏ ပတ်စပို့ (သို့) ခရီးသွားစာရွက်စာတမ်းနှင့်အတူ ထွက်ခွာခွင့်ကတ်ကို သိမ်းဆည်းထားရပြီး ထွက်ခွာချိန်တွင် လဝကအရာရှိထံ ပြသရမည်။<br>
+                    ၃။ နိုင်ငံခြားသားများအနေဖြင့် တရားဝင် <span class="law-highlight">အလုပ်လုပ်ကိုင်ခွင့်လက်မှတ် (Work Permit)</span> မရှိဘဲ အလုပ်လုပ်ကိုင်ခွင့် လုံးဝမရှိပါ။
+                </div>
+                <span class="law-section-badge">IMPORTANT NOTICE FOR IMMIGRATION ACT</span>
+            </div>
+
+        </div>
+
+        <div class="screen" id="scrSettings">
+            <div class="form-container">
+                <h3 style="font-size:14px; margin-bottom:12px; color:#475569; border-bottom:1px solid #cbd5e1; padding-bottom:6px;">📝 သက်တမ်းရက်စွဲများ ဖြည့်သွင်း/ပြင်ဆင်ရန်</h3>
+                
+                <div class="form-group">
+                    <label>🛂 ပတ်စပို့ ကုန်ဆုံးမည့်ရက်စွဲ</label>
+                    <input type="date" id="inputPassport">
+                </div>
+                
+                <div class="form-group">
+                    <label>💼 ဝက်ပါမစ် ကုန်ဆုံးမည့်ရက်စွဲ</label>
+                    <input type="date" id="inputWorkPermit">
+                </div>
+                
+                <div class="form-group">
+                    <label>📆 ရက် ၉၀ သတင်းပို့ရမည့်ရက်စွဲ</label>
+                    <input type="date" id="inputReport90">
+                </div>
+
+                <div class="form-group">
+                    <label>🪪 ပန်းရောင်ကတ် ကုန်ဆုံးမည့်ရက်စွဲ</label>
+                    <input type="date" id="inputPinkCard">
+                </div>
+
+                <div class="loading-text" id="saveLoading">⏳ အချက်အလက်များကို Cloud Firestore သို့ လုံခြုံစွာသိမ်းဆည်းနေပါသည်...</div>
+                <button class="btn btn-success" id="saveBtn" onclick="saveDataToFirestore()">💾 အချက်အလက်များ သိမ်းဆည်းမည်</button>
+            </div>
+        </div>
+
+        <div class="nav-bar" id="appNavBar">
+            <button class="nav-item active" id="navDash" onclick="switchTab('scrDashboard', 'navDash', '🗓️ သက်တမ်းခြေရာခံစနစ်')">
+                <span>🗓️</span>သက်တမ်း
+            </button>
+            <button class="nav-item" id="navLaw" onclick="switchTab('scrLawNotices', 'navLaw', '⚠️ ဥပဒေစည်းမျဉ်း သတိပြုရန်')">
+                <span>⚠️</span>သတိ
+            </button>
+            <button class="nav-item" id="navSet" onclick="switchTab('scrSettings', 'navSet', '⚙️ အချက်အလက်ဖြည့်ရန်')">
+                <span>⚙️</span>ပြင်ဆင်ရန်
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 🎯 Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDY8o3RX38-Nl1RkKeOC6gHWtfKXPcaxas",
+            authDomain: "mgjen-8b4f5.firebaseapp.com",
+            projectId: "mgjen-8b4f5",
+            storageBucket: "mgjen-8b4f5.firebasestorage.app",
+            messagingSenderId: "68512708249",
+            appId: "1:68512708249:web:6334e940e8306f0ff6ba08"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let isLoginMode = true;
+        let currentUserUid = null;
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authBoxTitle').innerText = isLoginMode ? "🔐 လော့ဂ်အင်ဝင်ရန်" : "📝 အကောင့်အသစ်ဖွင့်ရန်";
+            document.getElementById('authBtn').innerText = isLoginMode ? "အကောင့်ဝင်မည်" : "အကောင့်အသစ်ဆောက်မည်";
+            document.getElementById('authToggleText').innerText = isLoginMode ? "အကောင့်အသစ်မရှိသေးပါက ဤနေရာတွင် ဖွင့်ပါ 📝" : "အကောင့်ရှိပြီးသားဖြစ်ပါက လော့ဂ်အင်ဝင်ရန် 🔐";
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+
+            if(!email || !password) { alert("⚠️ အီးမေးလ်နှင့် စကားဝှက်ကို ပြည့်စုံစွာ ဖြည့်ပေးပါဗျာ။"); return; }
+            if(password.length < 6) { alert("⚠️ လုံခြုံရေးအတွက် စကားဝှက်ကို အနည်းဆုံး ၆ လုံး ထားပေးပါဗျာ။"); return; }
+
+            document.getElementById('authLoading').style.display = 'block';
+            document.getElementById('authBtn').disabled = true;
+
+            if (isLoginMode) {
+                auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    alert("❌ အကောင့်ဝင်ရန် မအောင်မြင်ပါ- " + error.message);
+                    document.getElementById('authLoading').style.display = 'none';
+                    document.getElementById('authBtn').disabled = false;
+                });
+            } else {
+                auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("✅ အကောင့်အသစ်ကို အောင်မြင်စွာ ဆောက်လုပ်ပြီးပါပြီဗျာ။");
+                })
+                .catch(error => {
+                    alert("❌ အကောင့်ဖွင့်ရန် မအောင်မြင်ပါ- " + error.message);
+                    document.getElementById('authLoading').style.display = 'none';
+                    document.getElementById('authBtn').disabled = false;
+                });
+            }
+        }
+
+        auth.onAuthStateChanged(user => {
+            document.getElementById('authLoading').style.display = 'none';
+            document.getElementById('authBtn').disabled = false;
+
+            if (user) {
+                currentUserUid = user.uid;
+                document.getElementById('scrAuth').style.display = 'none';
+                document.getElementById('appNavBar').style.display = 'flex';
+                document.getElementById('logoutBtn').style.display = 'block';
+                
+                switchTab('scrDashboard', 'navDash', '🗓️ သက်တမ်းခြေရာခံစနစ်');
+                loadDataFromFirestore();
+            } else {
+                currentUserUid = null;
+                document.getElementById('scrAuth').style.display = 'flex';
+                document.getElementById('scrDashboard').style.display = 'none';
+                document.getElementById('scrLawNotices').style.display = 'none';
+                document.getElementById('scrSettings').style.display = 'none';
+                document.getElementById('appNavBar').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('headerTitle').innerText = "🔒 အကောင့်ဝင်ရန်";
+            }
+        });
+
+        function handleLogout() {
+            if(confirm("🚪 အကောင့်ထဲမှ ထွက်မှာ သေချာပါသလားဗျာ?")) {
+                auth.signOut();
+            }
+        }
+
+        function saveDataToFirestore() {
+            if (!currentUserUid) return;
+
+            const passport = document.getElementById('inputPassport').value;
+            const workpermit = document.getElementById('inputWorkPermit').value;
+            const report90 = document.getElementById('inputReport90').value;
+            const pinkcard = document.getElementById('inputPinkCard').value;
+
+            document.getElementById('saveLoading').style.display = 'block';
+            document.getElementById('saveBtn').disabled = true;
+
+            db.collection("worker_users_data").doc(currentUserUid).set({
+                passport: passport,
+                workpermit: workpermit,
+                report90: report90,
+                pinkcard: pinkcard,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                document.getElementById('saveLoading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
+                alert('💾 အချက်အလက်များကို အွန်လိုင်း Cloud ပေါ်သို့ စိတ်ချရစွာ သိမ်းဆည်းပြီးပါပြီဗျာ။');
+                switchTab('scrDashboard', 'navDash', '🗓️ သက်တမ်းခြေရာခံစနစ်');
+                loadDataFromFirestore();
+            })
+            .catch(error => {
+                alert("❌ ဒေတာသိမ်းဆည်းမှု မအောင်မြင်ပါ- " + error.message);
+                document.getElementById('saveLoading').style.display = 'none';
+                document.getElementById('saveBtn').disabled = false;
+            });
+        }
+
+        function loadDataFromFirestore() {
+            if (!currentUserUid) return;
+
+            db.collection("worker_users_data").doc(currentUserUid).get()
+            .then(doc => {
+                let data = { passport:'', workpermit:'', report90:'', pinkcard:'' };
+                if (doc.exists) {
+                    data = doc.data();
+                    document.getElementById('inputPassport').value = data.passport || '';
+                    document.getElementById('inputWorkPermit').value = data.workpermit || '';
+                    document.getElementById('inputReport90').value = data.report90 || '';
+                    document.getElementById('inputPinkCard').value = data.pinkcard || '';
+                }
+                calculateTrackers(data);
+            })
+            .catch(error => {
+                console.error("Error loading data: ", error);
+            });
+        }
+
+        function getMonthAndDayCounts(today, expiry) {
+            let start = new Date(today.getTime());
+            let end = new Date(expiry.getTime());
+            let months = 0;
+            while (true) {
+                let nextMonth = new Date(start.getTime());
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                if (nextMonth <= end) { months++; start = nextMonth; } else { break; }
+            }
+            let days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+            if (days >= 30) { months++; days = days - 30; }
+            return { months: months, days: days };
+        }
+
+        function calculateTrackers(data) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            updateCard('passport', data.passport, today);
+            updateCard('workpermit', data.workpermit, today);
+            updateCard('report90', data.report90, today);
+            updateCard('pinkcard', data.pinkcard, today);
+        }
+
+        function updateCard(type, dateStr, today) {
+            const card = document.getElementById(type + 'Card');
+            const txt = document.getElementById(type + 'DateText');
+            const countdown = document.getElementById(type + 'Countdown');
+            const badge = document.getElementById(type + 'Badge');
+
+            if (!card || !txt || !countdown || !badge) return;
+
+            if (!dateStr || dateStr === "") {
+                txt.innerText = "-"; countdown.innerText = "🔍 အချက်အလက် ဖြည့်သွင်းရန် လိုအပ်ပါသည်";
+                card.style.setProperty('--status-color', '#cbd5e1');
+                badge.innerText = "မရှိ"; badge.style.background = '#94a3b8';
+                return;
+            }
+
+            const expiry = new Date(dateStr); expiry.setHours(0,0,0,0);
+            const totalDaysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            txt.innerText = dateStr;
+
+            let color = 'var(--color-safe)'; let badgeTxt = 'စိတ်ချရ'; let formattedText = "";
+
+            if (totalDaysLeft < 0) {
+                formattedText = `❌ သက်တမ်းကုန်လွန်သွားပါပြီ (${Math.abs(totalDaysLeft)} ရက်လွန်နေပါသည်)`;
+                color = 'var(--color-danger)'; badgeTxt = 'ကုန်ဆုံးပြီ';
+            } else {
+                const res = getMonthAndDayCounts(today, expiry);
+                if (res.months > 0) { formattedText = `⏳ ကျန်ရက်: ${res.months} လ နှင့် ${res.days} ရက် လိုသေးသည်`; }
+                else { formattedText = `⏳ ကျန်ရက်: ${res.days} ရက်ပဲ လိုတော့သည်`; }
+
+                if (totalDaysLeft <= 5) { color = 'var(--color-danger)'; badgeTxt = 'အရေးကြီး'; }
+                else if (totalDaysLeft <= 30) { color = 'var(--color-warning)'; badgeTxt = 'သတိပြုရန်'; }
+                else { color = 'var(--color-safe)'; badgeTxt = 'ပုံမှန်'; }
+            }
+
+            countdown.innerText = formattedText;
+            card.style.setProperty('--status-color', color);
+            badge.innerText = badgeTxt; badge.style.background = color;
+        }
+
+        function switchTab(screenId, navId, title) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
+            document.getElementById('headerTitle').innerText = title;
+        }
+    </script>
+</body>
+</html>

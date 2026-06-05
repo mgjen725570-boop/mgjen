@@ -12,178 +12,143 @@
             --rose-gold: #b76e79;
             --soft-cream: #fffbf7;
             --text-dark: #2c2c2c;
-            --text-muted: #5c5c5c;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body { 
-            font-family: 'Pyidaungsu', sans-serif; 
+            font-family: 'Pyidaungsu', 'Masterpiece Burmite', 'Myanmar3', sans-serif; 
             background-color: #f7f3ed;
-            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png'); /* စက္ကူသား Texture */
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
             display: flex; justify-content: center; align-items: center; min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-            position: relative;
+            padding: 15px; overflow-x: hidden; position: relative;
         }
 
-        /* 🌟 Luxury Card အပြင်အဆင် */
+        /* 🌟 Luxury Card (ဖုန်းမျက်နှာပြင်နှင့် လုံးဝကိုက်ညီအောင် ညှိထားသည်) */
         .luxury-card {
-            width: 100%; max-width: 460px; background: var(--soft-cream); 
-            box-shadow: 0 20px 50px rgba(183, 110, 121, 0.15);
+            width: 100%; max-width: 420px; background: var(--soft-cream); 
+            box-shadow: 0 15px 40px rgba(183, 110, 121, 0.15);
             border-radius: 24px; overflow: hidden; 
-            border: 12px solid #ffffff;
+            border: 8px solid #ffffff;
             outline: 1.5px solid var(--rose-gold); position: relative; text-align: center;
-            padding: 40px 24px; animation: fadeInCard 1.5s ease-out;
-            z-index: 10; /* အသဲပုံတွေရဲ့ အောက်မှာ ရှိနေစေရန် */
+            padding: 35px 20px; animation: fadeInCard 1.2s ease-out;
+            z-index: 10;
         }
 
         @keyframes fadeInCard {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 💖 အပေါ်ဆုံးမှ တဒိန်းဒိန်း နှလုံးခုန်နေမည့် အသဲပုံကြီးဒီဇိုင်း */
+        /* 💖 နှလုံးခုံ Animation ပုံစံ */
         .couple-avatar-box {
-            width: 130px; height: 130px;
-            margin: 0 auto 15px auto;
-            border-radius: 50%;
-            border: 3px solid #ffffff;
-            outline: 2px dashed var(--rose-gold);
-            box-shadow: 0 8px 20px rgba(183, 110, 121, 0.2);
+            width: 110px; height: 110px; margin: 0 auto 15px auto;
+            border-radius: 50%; border: 3px solid #ffffff; outline: 1.5px dashed var(--rose-gold);
+            box-shadow: 0 6px 15px rgba(183, 110, 121, 0.15);
             background: radial-gradient(circle, #fff5f5 0%, #ffe3e3 100%);
             display: flex; align-items: center; justify-content: center;
         }
 
         .wedding-icon {
-            width: 75px; height: 75px;
-            fill: var(--rose-gold);
-            filter: drop-shadow(0px 3px 5px rgba(183, 110, 121, 0.4));
-            animation: heartbeat 1.2s infinite ease-in-out;
+            width: 60px; height: 60px; fill: var(--rose-gold);
+            animation: heartbeat 1.3s infinite ease-in-out;
         }
 
         @keyframes heartbeat {
             0% { transform: scale(1); }
-            14% { transform: scale(1.12); }
+            14% { transform: scale(1.1); }
             28% { transform: scale(1); }
-            42% { transform: scale(1.12); }
+            42% { transform: scale(1.1); }
             70% { transform: scale(1); }
         }
 
-        .floral-accent { font-size: 18px; color: var(--rose-gold); margin: 15px 0; letter-spacing: 3px; }
+        .floral-accent { font-size: 16px; color: var(--rose-gold); margin: 12px 0; letter-spacing: 2px; }
 
-        /* 📜 ခေါင်းစဉ်ပိုင်း */
+        /* 📜 ခေါင်းစဉ်ပိုင်း (ဖုန်းမှာ စာလုံးမကျိုးအောင် size ညှိထားသည်) */
         .invitation-header {
-            font-size: 22px; font-weight: bold; color: var(--rose-gold);
-            letter-spacing: 1px; margin-bottom: 3px;
+            font-size: 20px; font-weight: bold; color: var(--rose-gold);
+            letter-spacing: 0.5px; margin-bottom: 3px;
         }
         .save-the-date {
-            font-family: 'Alex Brush', cursive; font-size: 40px;
-            color: var(--luxury-gold); margin-bottom: 15px;
+            font-family: 'Alex Brush', cursive; font-size: 36px;
+            color: var(--luxury-gold); margin-bottom: 10px;
         }
 
-        /* 💑 သတို့သား/သမီး နာမည်များ (ရွှေရောင် Gradient ဒီဇိုင်းဆန်း) */
+        /* 💑 သတို့သား/သမီး နာမည်များ */
         .couple-box {
             background: linear-gradient(145deg, #ffffff, #fffbf7);
-            border-radius: 20px; padding: 25px 15px; margin: 20px 0;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.08);
-            position: relative;
+            border-radius: 18px; padding: 20px 15px; margin: 15px 0;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            box-shadow: 0 6px 15px rgba(212, 175, 55, 0.05);
         }
-        .couple-box::before, .couple-box::after {
-            content: "❧"; color: var(--luxury-gold); font-size: 18px; position: absolute; top: 10px;
-        }
-        .couple-box::before { left: 15px; }
-        .couple-box::after { right: 15px; transform: scaleX(-1); }
-
         .groom-name, .bride-name {
-            font-size: 25px; font-weight: 700;
+            font-size: 24px; font-weight: 700;
             background: linear-gradient(135deg, #a67c1e 0%, #d4af37 50%, #f3e5ab 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 8px 0; letter-spacing: 1px;
-            filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));
-            display: block;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin: 4px 0; letter-spacing: 0.5px; display: block;
         }
         .name-label {
-            font-size: 11px; color: var(--rose-gold); 
-            text-transform: uppercase; letter-spacing: 2px; font-weight: bold;
-            display: block; margin-bottom: -2px;
+            font-size: 11px; color: var(--rose-gold); font-weight: bold;
+            display: block; letter-spacing: 1px;
         }
-        
         .and-symbol { 
-            font-family: 'Great Vibes', cursive; font-size: 38px; 
+            font-family: 'Great Vibes', cursive; font-size: 32px; 
             color: var(--rose-gold); margin: 2px 0; line-height: 1;
         }
 
-        /* 📜 ဖိတ်ကြားစာသား */
+        /* 📜 ဖိတ်ကြားစာသား (မညီမညာဖြစ်ခြင်းကို ဖြေရှင်းရန် Center ပြောင်းလဲထားသည်) */
         .invitation-text-box {
-            padding: 0 10px; margin: 25px 0;
-            font-size: 14.5px; line-height: 1.9;
-            color: var(--text-dark); text-align: justify;
-            font-weight: 500;
+            padding: 0 5px; margin: 20px 0;
+            font-size: 14px; line-height: 1.8;
+            color: var(--text-dark); text-align: center; /* 👈 စာသားများကို အလယ်ဗဟိုညှိပြီး ညီညာစေသည် */
+            word-break: keep-all;
         }
 
-        /* 🗓️ မင်္ဂလာအစီအစဉ် ကဏ္ဍ */
+        /* 🗓️ မင်္ဂလာအစီအစဉ် */
         .schedule-box {
             text-align: left; background: #ffffff; border-radius: 16px;
-            padding: 24px; margin: 25px 0; border-left: 4px solid var(--luxury-gold);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            padding: 20px; margin: 20px 0; border-left: 4px solid var(--luxury-gold);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.01);
         }
         .schedule-title {
-            font-size: 16px; font-weight: bold; color: var(--rose-gold);
-            margin-bottom: 15px; border-bottom: 1px dashed #e2e8f0;
-            padding-bottom: 8px; text-align: center; letter-spacing: 1px;
+            font-size: 15px; font-weight: bold; color: var(--rose-gold);
+            margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 6px; text-align: center;
         }
         .info-row {
-            display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;
-            font-size: 14px; color: var(--text-dark); line-height: 1.6;
+            display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px;
+            font-size: 13.5px; color: var(--text-dark); line-height: 1.5;
         }
         .info-row:last-child { margin-bottom: 0; }
         .info-row span { font-weight: bold; color: var(--luxury-gold); }
 
-        /* 📍 တည်နေရာ ပြသရန်ခလုတ် */
+        /* 📍 တည်နေရာ မြေပုံခလုတ် */
         .map-btn {
             background: linear-gradient(135deg, var(--rose-gold), #a25661);
-            color: white; border: none; padding: 14px 28px;
-            font-size: 14px; font-weight: bold; border-radius: 50px; cursor: pointer;
-            text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            width: 100%; box-shadow: 0 6px 20px rgba(183, 110, 121, 0.3);
-            transition: all 0.3s; margin-top: 10px;
+            color: white; border: none; padding: 12px 20px;
+            font-size: 13.5px; font-weight: bold; border-radius: 50px; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; box-shadow: 0 5px 15px rgba(183, 110, 121, 0.25);
+            transition: transform 0.2s; margin-top: 5px;
         }
+        .map-btn:active { transform: scale(0.98); }
 
         /* 🎵 Music Control */
         .music-ctrl {
-            position: fixed; top: 20px; right: 20px; z-index: 1000;
-            background: rgba(255, 255, 255, 0.85); border: 1px solid var(--rose-gold);
-            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 18px;
-            animation: pulseMusic 2s infinite alternate;
+            position: fixed; top: 15px; right: 15px; z-index: 1000;
+            background: rgba(255, 255, 255, 0.9); border: 1px solid var(--rose-gold);
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        @keyframes pulseMusic { from { transform: scale(1); } to { transform: scale(1.08); } }
 
-        /* 🌧️ 💕 အောက်သို့ကြွေကျမည့် အသဲပုံလေးများအတွက် CSS Animation */
+        /* 🌧️ Falling Hearts */
         .falling-heart {
-            position: fixed;
-            top: -20px;
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 5;
-            animation: fall linear infinite;
+            position: fixed; top: -20px; font-size: 14px;
+            pointer-events: none; z-index: 5; animation: fall linear infinite;
         }
-
         @keyframes fall {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-            }
-            90% {
-                opacity: 0.9;
-            }
-            100% {
-                transform: translateY(105vh) rotate(360deg);
-                opacity: 0;
-            }
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
@@ -195,7 +160,6 @@
     </audio>
 
     <div class="luxury-card">
-        
         <div class="couple-avatar-box">
             <svg class="wedding-icon" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -210,15 +174,13 @@
         <div class="couple-box">
             <span class="name-label">သတို့သား</span>
             <div class="groom-name">မောင်ဂျမ်း</div>
-            
             <div class="and-symbol">&</div>
-            
             <span class="name-label">သတို့သမီး</span>
             <div class="bride-name">မတိုးတိုးဝေ</div>
         </div>
 
         <div class="invitation-text-box">
-                    ကျွန်တော်/မတို့၏ မင်္ဂလာဧည့်ခံပွဲသို့ ဂုဏ်သရေရှိ လူကြီးမင်းအား ကြွရောက်အသိအမှတ်ပြု ချီးမြှင့်ပေးပါရန် ခင်မင်ရင်းနှီးစွာ ဖိတ်ကြားအပ်ပါသည်။
+            ကျွန်တော်/မတို့၏ မင်္ဂလာဧည့်ခံပွဲသို့ ဂုဏ်သရေရှိ လူကြီးမင်းအား ကြვရောက်အသိအမှတ်ပြု ချီးမြှင့်ပေးပါရန် ခင်မင်ရင်းနှီးစွာ ဖိတ်ကြားအပ်ပါသည်။
         </div>
 
         <div class="floral-accent">🌿 🌸 🌿</div>
@@ -233,55 +195,41 @@
 
             <div class="info-row">
                 <span>⏰ အချိန် -</span>
-                နံနက် ၀၉:00 နာရီ မှ ညနေ ၁၁:00 နာရီအထိ
+                နံနက် ၀၉:၀၀ နာရီ မှ ၁၁:၀၀ နာရီအထိ
             </div>
 
             <div class="info-row">
                 <span>🏨 တည်နေရာ -</span>
-                ဆဒ္ဒန်ဆင်မင်း မင်္ဂလာခန်းမ၊ ရန်ကုန်မြို့။
+                စမူပရာကန် BangBo၊
             </div>
         </div>
 
-        <a href="https://maps.google.com" target="_blank" class="map-btn">
+        <a href="https://maps.google.com/?q=ဆဒ္ဒန်ဆင်မင်းမင်္ဂလာခန်းမ" target="_blank" class="map-btn">
             📍 မင်္ဂလာခန်းမတည်နေရာကြည့်ရန် (Google Map)
         </a>
     </div>
 
     <script>
-        const heartColors = ['#b76e79', '#d4af37', '#ffb6c1', '#ffc0cb', '#e6b800'];
-        const heartSymbols = ['💖', '❤️', '💕', '✨', '🌸'];
+        // အသဲပုံကြွေကျခြင်း စနစ်
+        const heartColors = ['#b76e79', '#d4af37', '#ffb6c1', '#e6b800'];
+        const heartSymbols = ['💖', '❤️', '💕', '✨'];
 
         function createFallingHeart() {
             const heart = document.createElement('div');
             heart.classList.add('falling-heart');
-            
-            // ကျချင်တဲ့ အသဲပုံသင်္ကေတနှင့် အရောင်ကို ကျပန်း (Random) ရွေးချယ်ခြင်း
             heart.innerText = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
             heart.style.color = heartColors[Math.floor(Math.random() * heartColors.length)];
-            
-            // နေရာစုံက ကျလာစေရန် ဘယ်ညာ နေရာကို Random ပေးခြင်း
             heart.style.left = Math.random() * 100 + 'vw';
-            
-            // အရွယ်အစား စုံလင်စေရန် (သေးသေးလေးတွေရော လတ်လတ်လေးတွေရော)
-            const size = Math.random() * 12 + 10; // 10px မှ 22px အတွင်း
+            const size = Math.random() * 8 + 10;
             heart.style.fontSize = size + 'px';
-            
-            // ကျဆင်းမည့် အမြန်နှုန်း (၃ စက္ကန့် မှ ၆ စက္ကန့်အတွင်း ကျပန်း)
             const duration = Math.random() * 3 + 3;
             heart.style.animationDuration = duration + 's';
-            
             document.body.appendChild(heart);
-
-            // မျက်နှာပြင်အောက် ရောက်သွားရင် ဖျက်ပစ်ပြီး ဖုန်းဒေတာ မလေးအောင် ထိန်းသိမ်းခြင်း
-            setTimeout(() => {
-                heart.remove();
-            }, duration * 1000);
+            setTimeout(() => { heart.remove(); }, duration * 1000);
         }
+        setInterval(createFallingHeart, 400);
 
-        // မေးလ်/လင့် ပွင့်လာတာနဲ့ တစ်စက္ကန့်ကို အသဲပုံ ၃ ခုနှုန်း အော်တိုထုတ်ပေးမည့်စနစ်
-        setInterval(createFallingHeart, 350);
-
-        // 🎵 Music Control Script
+        // Music Control
         const music = document.getElementById("weddingMusic");
         const musicBtn = document.getElementById("musicBtn");
         let isPlaying = false;
@@ -294,7 +242,6 @@
             if (isPlaying) {
                 music.pause();
                 musicBtn.innerText = "🔇";
-                musicBtn.style.animation = "none";
             } else {
                 playMusic();
             }
@@ -304,9 +251,8 @@
         function playMusic() {
             music.play().then(() => {
                 musicBtn.innerText = "🎵";
-                musicBtn.style.animation = "pulseMusic 2s infinite alternate";
                 isPlaying = true;
-            }).catch(err => console.log("Audio block active."));
+            }).catch(err => console.log("Audio update."));
         }
     </script>
 </body>

@@ -102,7 +102,7 @@
         .floor-btn:hover, .contract-btn:hover { border-color: var(--primary); color: var(--primary); }
         .floor-btn.active, .contract-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
 
-        .btn-off-manual { padding: 8px 14px; background: #fff1f2; border: 1.5px solid #fecdd3; color: var(--danger); border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-off-manual { padding: 6px 12px; background: #fff1f2; border: 1.5px solid #fecdd3; color: var(--danger); border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
         .btn-off-manual:hover { background: var(--danger); color: white; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
 
         section { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -220,8 +220,8 @@
                             <th data-i18n="th_name">Name</th>
                             <th data-i18n="th_contract_status">Contract Status</th>
                             <th data-i18n="th_floor">Floor</th>
-                            <th data-i18n="th_status">Status</th>
-                            <th data-i18n="th_unscheduled_leave">Unscheduled Leave</th>
+                            <th data-i18n="th_status">Off Days</th>
+                            <th data-i18n="th_unscheduled_leave">Today Status</th>
                             <th data-i18n="th_actions">Actions</th>
                         </tr>
                     </thead>
@@ -398,8 +398,8 @@
                 stat_off: "ယနေ့ နားသူ", stat_tomorrow: "မနက်ဖြန် နားမည်သူ", lbl_contract_category: "စာချုပ် အမျိုးအစား:",
                 btn_all_types: "အားလုံး", btn_contract_staff: "စာချုပ်ပါ ဝန်ထမ်း", btn_non_contract_staff: "စာချုပ်မရှိသူ",
                 ph_search: "ဝန်ထမ်းအမည်ဖြင့် ရှာဖွေပါ...", th_photo: "ဓာတ်ပုံ", th_name: "အမည်",
-                th_contract_status: "စာချုပ် စတာတပ်စ်", th_floor: "နေရာ/Floor", th_status: "အခြေအနေ",
-                th_unscheduled_leave: "အထူးခွင့်/နားရက်", th_actions: "လုပ်ဆောင်ချက်", btn_view: "ကြည့်ရှုမည်",
+                th_contract_status: "စာချုပ် စတာတပ်စ်", th_floor: "နေရာ/FLOOR", th_status: "အလုပ်နားရက်များ",
+                th_unscheduled_leave: "ယနေ့အလုပ်ဆင်း/နား", th_actions: "လုပ်ဆောင်ချက်", btn_view: "ကြည့်ရှုမည်",
                 th_att_status: "တက်ရောက်မှု", th_note: "မှတ်ချက်", ph_amount: "ပမာဏ", ph_note: "မှတ်ချက်",
                 btn_save_loan: "ကြိုတင်ငွေ သိမ်းဆည်းမည်", th_date: "ရက်စွဲ", th_amount: "ပမာဏ", ph_ot: "အိုတီ နာရီ",
                 ph_fine: "ဒဏ်ကြေး/ဖြတ်တောက်မှု", btn_save_payroll: "လစာစာရင်း သိမ်းမည်", th_month: "လ",
@@ -412,7 +412,7 @@
                 lbl_offday: "သတ်မှတ် နားရက်", lbl_photo: "ဓာတ်ပုံ", btn_save: "ဒေတာ သိမ်းဆည်းမည်",
                 modal_unscheduled_title: "အထူးခွင့် သတ်မှတ်ရန်", lbl_date: "ရက်စွဲ", lbl_reason: "အကြောင်းပြချက်",
                 btn_confirm: "အတည်ပြုမည်", btn_cancel: "မလုပ်တော့ပါ", btn_close: "ပိတ်မည်", title_settings: "ပြင်ဆင်ချက်များ",
-                btn_update: "ပြင်ဆင်မည်", badge_contract: "စာချုပ်ပါ", badge_non_contract: "စာချုပ်မရှိ"
+                btn_update: "ပြင်ဆင်မည်", badge_contract: "စာချုပ်ပါ", badge_non_contract: "စာချုပ်မရှိ", btn_take_leave: "ခွင့်ယူမည်"
             },
             th: {
                 sec_main: "ระบบหลัก", nav_dashboard: "แผงควบคุม", nav_attendance: "การเข้างาน",
@@ -423,8 +423,8 @@
                 stat_off: "หยุดวันนี้", stat_tomorrow: "หยุดพรุ่งนี้", lbl_contract_category: "ประเภทสัญญา:",
                 btn_all_types: "ทั้งหมด", btn_contract_staff: "มีสัญญาจ้าง", btn_non_contract_staff: "ไม่มีสัญญา",
                 ph_search: "ค้นหาชื่อพนักงาน...", th_photo: "รูปถ่าย", th_name: "ชื่อ-สกุล",
-                th_contract_status: "สถานะสัญญา", th_floor: "แผนก/ชั้น", th_status: "สถานะ",
-                th_unscheduled_leave: "การลากิจ/พิเศษ", th_actions: "จัดการ", btn_view: "ดูข้อมูล",
+                th_contract_status: "สถานะสัญญา", th_floor: "แผนก/FLOOR", th_status: "วันหยุดประจำ",
+                th_unscheduled_leave: "สถานะวันนี้", th_actions: "จัดการ", btn_view: "ดูข้อมูล",
                 th_att_status: "สถานะเข้างาน", th_note: "หมายเหตุ", ph_amount: "จำนวนเงิน", ph_note: "บันทึก",
                 btn_save_loan: "บันทึกการกู้", th_date: "วันที่", th_amount: "จำนวน", ph_ot: "ชั่วโมง OT",
                 ph_fine: "หัก/ค่าปรับ", btn_save_payroll: "บันทึกเงินเดือน", th_month: "เดือน",
@@ -437,7 +437,7 @@
                 lbl_offday: "วันหยุดประจำสัปดาห์", lbl_photo: "รูปถ่าย", btn_save: "บันทึกข้อมูล",
                 modal_unscheduled_title: "บันทึกการหยุดพิเศษ", lbl_date: "วันที่", lbl_reason: "เหตุผล",
                 btn_confirm: "ยืนยัน", btn_cancel: "ยกเลิก", btn_close: "ปิด", title_settings: "ตั้งค่าระบบ",
-                btn_update: "อัปเดต", badge_contract: "มีสัญญา", badge_non_contract: "ไม่มีสัญญา"
+                btn_update: "อัปเดต", badge_contract: "มีสัญญา", badge_non_contract: "ไม่มีสัญญา", btn_take_leave: "ลากิจ"
             },
             zh: {
                 sec_main: "核心系统", nav_dashboard: "仪表板", nav_attendance: "考勤记录",
@@ -448,8 +448,8 @@
                 stat_off: "今日休息", stat_tomorrow: "明日休息", lbl_contract_category: "合同类型:",
                 btn_all_types: "全部", btn_contract_staff: "正式合同员工", btn_non_contract_staff: "无合同员工",
                 ph_search: "按姓名搜索...", th_photo: "照片", th_name: "姓名",
-                th_contract_status: "合同状态", th_floor: "部门/楼层", th_status: "状态",
-                th_unscheduled_leave: "特假/请假", th_actions: "操作", btn_view: "查看",
+                th_contract_status: "合同状态", th_floor: "部门/FLOOR", th_status: "固定休息日",
+                th_unscheduled_leave: "今日状态", th_actions: "操作", btn_view: "查看",
                 th_att_status: "考勤状态", th_note: "备注", ph_amount: "金额", ph_note: "备注",
                 btn_save_loan: "保存借款", th_date: "日期", th_amount: "金额", ph_ot: "加班小时",
                 ph_fine: "罚款/扣款", btn_save_payroll: "保存薪资记录", th_month: "月份",
@@ -462,7 +462,7 @@
                 lbl_offday: "固定休息日", lbl_photo: "个人照片", btn_save: "保存数据",
                 modal_unscheduled_title: "登记临时请假", lbl_date: "日期", lbl_reason: "事由",
                 btn_confirm: "确认", btn_cancel: "取消", btn_close: "关闭", title_settings: "设置",
-                btn_update: "更新", badge_contract: "有合同", badge_non_contract: "无合同"
+                btn_update: "更新", badge_contract: "有合同", badge_non_contract: "无合同", btn_take_leave: "请假"
             }
         };
 
@@ -582,7 +582,7 @@
                 } else if (emp.offDay === todayName) {
                     leaveActionColumn = `<span style="font-size:12px; color:var(--text-muted); font-weight:500;">Scheduled Off</span>`;
                 } else {
-                    leaveActionColumn = `<button class="btn-off-manual" onclick="openUnscheduledModal('${emp.id}', '${emp.name}')"><i class="fas fa-bed"></i> Special Leave</button>`;
+                    leaveActionColumn = `<button class="btn-off-manual" onclick="openUnscheduledModal('${emp.id}', '${emp.name}')"><i class="fas fa-bed"></i> ${translations[currentLang].btn_take_leave}</button>`;
                 }
 
                 const isContract = (emp.contractType || 'Contract') === 'Contract';

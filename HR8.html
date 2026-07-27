@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGJEN HR - Enterprise Multi-Language Edition</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-storage-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #1e293b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Padauk', sans-serif; }
+        body { background: var(--bg-main); display: flex; height: 100vh; overflow: hidden; color: var(--text-main); }
+
+        /* --- Login Window --- */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #1e293b, #0f172a); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 45px 40px; border-radius: 24px; width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5); border: 1px solid rgba(255,255,255,0.2); }
+        .admin-logo { width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary), var(--purple)); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 24px; transform: rotate(5deg); }
+        .login-box h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #0f172a; }
+        .login-box p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+        .login-box input { width: 100%; padding: 14px 16px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; outline: none; font-size: 14px; transition: 0.2s; }
+        .login-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+        .login-box .btn-login { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 15px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar { width: 270px; background: var(--sidebar-bg); color: #94a3b8; padding: 30px 20px; flex-shrink: 0; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar h2 { color: white; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 35px; padding-left: 10px; display: flex; align-items: center; gap: 10px; }
+        .sidebar h2 i { color: var(--primary); }
+        .sidebar .section-label { font-size: 11px; color: #475569; text-transform: uppercase; margin: 25px 0 10px 10px; font-weight: 700; letter-spacing: 1px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li { padding: 12px 15px; margin-bottom: 6px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.25s ease; font-size: 14px; font-weight: 500; }
+        .sidebar li i { font-size: 16px; transition: 0.2s; }
+        .sidebar li:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+        .sidebar li.active { background: rgba(59, 130, 246, 0.15); color: var(--primary); font-weight: 600; border-left: 4px solid var(--primary); border-radius: 4px 12px 12px 4px; }
+        .sidebar li.active i { color: var(--primary); }
+        
+        /* --- Main Content Area --- */
+        .main { flex: 1; padding: 35px; overflow-y: auto; background: var(--bg-main); }
+        #pageTitle { font-size: 26px; font-weight: 700; color: #0f172a; }
+        
+        /* --- Language Selector Control --- */
+        .lang-select-box { display: flex; align-items: center; gap: 8px; background: white; padding: 6px 12px; border-radius: 12px; border: 1.5px solid #e2e8f0; }
+        .lang-select-box select { border: none; background: transparent; padding: 0; margin: 0; font-weight: 600; font-size: 13.5px; color: #0f172a; cursor: pointer; }
+        .lang-select-box select:focus { box-shadow: none; }
+
+        /* --- Cards & Dashboard --- */
+        .card { background: white; padding: 25px; border-radius: 16px; border: 1px solid #edf2f7; box-shadow: var(--card-shadow); margin-bottom: 25px; transition: box-shadow 0.3s; }
+        .card:hover { box-shadow: var(--card-shadow-hover); }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 24px; border-radius: 16px; border: 1px solid #edf2f7; box-shadow: var(--card-shadow); cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: space-between; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
+        .stat-card h3 { font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .stat-card p { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        /* --- Tables --- */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 15px; }
+        th { text-align: left; padding: 16px; background: #f8fafc; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; vertical-align: middle; }
+        tr:hover td { background-color: #f8fafc; }
+        
+        /* --- Photo Hover/Zoom Concept --- */
+        .table-photo-container { position: relative; width: 44px; height: 44px; }
+        .table-photo { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: absolute; top: 0; left: 0; z-index: 1; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .table-photo:hover { transform: scale(3.5) translateY(10px); border-radius: 12px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15); z-index: 10; }
+
+        .btn { padding: 11px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; color: white; background: var(--primary); transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
+        
+        input, select, textarea { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px; outline: none; font-size: 14px; color: #0f172a; transition: all 0.2s; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .badge-off { background: #fee2e2; color: #ef4444; } 
+        .badge-on { background: #dcfce7; color: #10b981; } 
+        .badge-tomorrow { background: #f3e8ff; color: var(--purple); }
+        .badge-pending { background: #fef3c7; color: var(--warning); }
+        .badge-contract { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+        .badge-non-contract { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+        .floor-btn, .contract-btn { padding: 8px 16px; background: white; border: 1.5px solid #e2e8f0; color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .floor-btn:hover, .contract-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .floor-btn.active, .contract-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .btn-off-manual { padding: 8px 14px; background: #fff1f2; border: 1.5px solid #fecdd3; color: var(--danger); border-radius: 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-off-manual:hover { background: var(--danger); color: white; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
+
+        section { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 32px; border-radius: 20px; width: 420px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); border: 1px solid #edf2f7; }
+        
+        .btn-force-present { padding: 6px 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: 0.2s; }
+        .btn-force-present:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .action-icon { font-size: 15px; cursor: pointer; transition: all 0.2s; padding: 6px; border-radius: 6px; }
+        .action-icon.edit { color: var(--warning); background: #fffbeb; margin-right: 8px; }
+        .action-icon.edit:hover { background: var(--warning); color: white; }
+        .action-icon.delete { color: var(--danger); background: #fef2f2; }
+        .action-icon.delete:hover { background: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Login Section -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <div class="admin-logo"><i class="fas fa-shield-halved"></i></div>
+            <h2>Welcome Back</h2>
+            <p>Sign in to manage MGJEN HR system</p>
+            <input type="text" id="loginUser" placeholder="Admin ID">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button class="btn-login" onclick="handleLogin()">Sign In</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Section -->
+    <div class="sidebar">
+        <h2><i class="fas fa-cube"></i> MGJEN HR</h2>
+        <div class="section-label" data-i18n="sec_main">MAIN MATRIX</div>
+        <ul>
+            <li class="active" id="btn-list" onclick="switchTab('list')"><i class="fas fa-chart-pie"></i> <span data-i18n="nav_dashboard">Dashboard</span></li>
+            <li id="btn-att" onclick="switchTab('att')"><i class="fas fa-user-check"></i> <span data-i18n="nav_attendance">Attendance</span></li>
+        </ul>
+        <div class="section-label" data-i18n="sec_finance">FINANCE CORE</div>
+        <ul>
+            <li id="btn-loan" onclick="switchTab('loan')"><i class="fas fa-wallet"></i> <span data-i18n="nav_loan">Loan Records</span></li>
+            <li id="btn-salary" onclick="switchTab('salary')"><i class="fas fa-receipt"></i> <span data-i18n="nav_payroll">Payroll Management</span></li>
+        </ul>
+        <div class="section-label" data-i18n="sec_admin">ADMINISTRATION</div>
+        <ul>
+            <li id="btn-add" onclick="clearAndSwitchToAdd()"><i class="fas fa-user-plus"></i> <span data-i18n="nav_register">Register Staff</span></li>
+            <li id="btn-notice" onclick="switchTab('notice')"><i class="fas fa-envelope-open"></i> <span data-i18n="nav_notice">Notice Board</span></li>
+            <li id="btn-leave" onclick="switchTab('leave')"><i class="fas fa-file-signature"></i> <span data-i18n="nav_leave">Leave Requests</span></li>
+            <li onclick="openAdminSettings()"><i class="fas fa-sliders"></i> <span data-i18n="nav_settings">Settings</span></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <h2 id="pageTitle" data-i18n="title_dashboard">Management Dashboard</h2>
+            
+            <div style="display:flex; gap:12px; align-items:center;">
+                <!-- Language Switcher Component -->
+                <div class="lang-select-box">
+                    <i class="fas fa-globe" style="color:var(--primary);"></i>
+                    <select id="langSelect" onchange="changeLanguage(this.value)">
+                        <option value="mm">မြန်မာ (Myanmar)</option>
+                        <option value="th">ไทย (Thai)</option>
+                        <option value="zh">中文 (Chinese)</option>
+                    </select>
+                </div>
+                <button class="btn" style="background:var(--sidebar-bg);" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="btn_logout">Logout</span></button>
+            </div>
+        </div>
+
+        <!-- Dashboard Analytics -->
+        <section id="list-tab" class="active">
+            <div class="stat-grid">
+                <div class="stat-card" onclick="setFilter('status','all')">
+                    <div><p data-i18n="stat_total">Total Staff</p><h3 id="totalCount">0</h3></div>
+                    <div class="stat-icon" style="background:#eff6ff; color:var(--primary);"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-card" onclick="setFilter('status','working')">
+                    <div><p data-i18n="stat_working">Working Today</p><h3 id="workingCount">0</h3></div>
+                    <div class="stat-icon" style="background:#ecfdf5; color:var(--success);"><i class="fas fa-user-tie"></i></div>
+                </div>
+                <div class="stat-card" onclick="setFilter('status','off')">
+                    <div><p data-i18n="stat_off">Off Today</p><h3 id="offCount">0</h3></div>
+                    <div class="stat-icon" style="background:#fef2f2; color:var(--danger);"><i class="fas fa-user-slash"></i></div>
+                </div>
+                <div class="stat-card" id="tomorrowCard" onclick="setFilter('status','tomorrow')">
+                    <div><p data-i18n="stat_tomorrow">Off Tomorrow</p><h3 id="tomorrowOffCount">0</h3></div>
+                    <div class="stat-icon" style="background:#f5f3ff; color:var(--purple);"><i class="fas fa-calendar-day"></i></div>
+                </div>
+            </div>
+
+            <!-- Contract Type Filter Bar -->
+            <div style="margin-bottom:12px; display:flex; gap:8px; align-items:center;">
+                <span style="font-size:13px; font-weight:600; color:var(--text-muted); margin-right:5px;" data-i18n="lbl_contract_category">Contract Category:</span>
+                <button class="contract-btn active" onclick="setContractFilter('All', event)" data-i18n="btn_all_types">All Types</button>
+                <button class="contract-btn" onclick="setContractFilter('Contract', event)"><i class="fas fa-file-contract" style="color:var(--primary);"></i> <span data-i18n="btn_contract_staff">Contract Staff</span></button>
+                <button class="contract-btn" onclick="setContractFilter('Non-Contract', event)"><i class="fas fa-user-clock" style="color:var(--text-muted);"></i> <span data-i18n="btn_non_contract_staff">Non-Contract Staff</span></button>
+            </div>
+
+            <div id="floorBtnsContainer" style="margin-bottom:20px; display:flex; gap:8px; flex-wrap:wrap;"></div>
+
+            <div class="card" style="padding: 10px 25px 25px 25px;">
+                <div style="padding: 15px 0; display:flex; align-items:center; position:relative;">
+                    <i class="fas fa-search" style="position:absolute; left:15px; color:var(--text-muted);"></i>
+                    <input type="text" id="searchBox" placeholder="Quick search employee..." data-i18n-ph="ph_search" onkeyup="renderTable()" style="margin-bottom:0; padding-left:45px; background: #f1f5f9; border:none;">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="th_photo">Photo</th>
+                            <th data-i18n="th_name">Name</th>
+                            <th data-i18n="th_contract_status">Contract Status</th>
+                            <th data-i18n="th_floor">Floor</th>
+                            <th data-i18n="th_status">Status</th>
+                            <th data-i18n="th_unscheduled_leave">Unscheduled Leave</th>
+                            <th data-i18n="th_actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Attendance Section -->
+        <section id="att-tab">
+            <div class="card">
+                <div style="display:flex; gap:12px; margin-bottom:20px; max-width:400px;">
+                    <input type="date" id="attDate" style="margin-bottom:0;">
+                    <button class="btn" onclick="loadAttendance()"><i class="fas fa-eye"></i> <span data-i18n="btn_view">View Records</span></button>
+                </div>
+                <table><thead><tr><th data-i18n="th_name">Name</th><th data-i18n="th_floor">Floor</th><th data-i18n="th_att_status">Status</th><th data-i18n="th_note">Note</th></tr></thead><tbody id="attTableBody"></tbody></table>
+            </div>
+        </section>
+
+        <!-- Loan Records Section -->
+        <section id="loan-tab">
+            <div class="card">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; margin-bottom:20px;">
+                    <select id="loanStaffName" style="margin-bottom:0;"></select>
+                    <input type="number" id="loanAmount" placeholder="Amount" data-i18n-ph="ph_amount" style="margin-bottom:0;">
+                    <input type="text" id="loanNote" placeholder="Note" data-i18n-ph="ph_note" style="margin-bottom:0;">
+                </div>
+                <button class="btn" onclick="addLoan()"><i class="fas fa-plus"></i> <span data-i18n="btn_save_loan">Save Loan</span></button>
+                <table style="margin-top:25px;"><thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_name">Name</th><th data-i18n="th_amount">Amount</th><th data-i18n="th_note">Note</th><th data-i18n="th_actions">Action</th></tr></thead><tbody id="loanTableBody"></tbody></table>
+            </div>
+        </section>
+
+        <!-- Salary Section -->
+        <section id="salary-tab">
+            <div class="card">
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+                    <select id="salStaffName" style="margin-bottom:0;"></select>
+                    <input type="number" id="salOT" placeholder="OT Hours" data-i18n-ph="ph_ot" style="margin-bottom:0;">
+                    <input type="number" id="salFine" placeholder="Fine/Deduction" data-i18n-ph="ph_fine" style="margin-bottom:0;">
+                    <input type="text" id="salMonth" value="July 2026" style="margin-bottom:0;">
+                </div>
+                <button class="btn" onclick="addSalaryRecord()"><i class="fas fa-check"></i> <span data-i18n="btn_save_payroll">Save Payroll Record</span></button>
+                <table style="margin-top:25px;"><thead><tr><th data-i18n="th_month">Month</th><th data-i18n="th_name">Name</th><th data-i18n="th_base_salary">Base Salary</th><th data-i18n="th_ot_fine">OT / Fine</th><th data-i18n="th_net_pay">Net Pay</th><th data-i18n="th_actions">Action</th></tr></thead><tbody id="salaryTableBody"></tbody></table>
+            </div>
+        </section>
+
+        <!-- Notice Section -->
+        <section id="notice-tab">
+            <div class="card">
+                <h3 style="font-size:16px; margin-bottom:15px;" data-i18n="lbl_notice_title">Notice Broadcast</h3>
+                <textarea id="noticeText" placeholder="Write notice content..." data-i18n-ph="ph_notice_msg" style="height:120px;"></textarea>
+                <button class="btn" onclick="postNotice()"><i class="fas fa-paper-plane"></i> <span data-i18n="btn_post_notice">Post Notice</span></button>
+                <p id="displayNoticeMsg" style="margin-top:15px; color:var(--warning); font-size:14px; font-weight:500;"></p>
+            </div>
+            
+            <div class="card">
+                <h3 style="font-size:16px; margin-bottom:5px;" data-i18n="lbl_video_title">Daily Video (MP4)</h3>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <input type="file" id="videoFile" accept="video/mp4" style="margin-bottom:0; background:white;">
+                    <button class="btn" id="uploadBtn" onclick="uploadDailyVideo()"><i class="fas fa-cloud-upload-alt"></i> <span data-i18n="btn_upload_video">Upload</span></button>
+                </div>
+                <div id="uploadStatus" style="font-size:13px; font-weight:600; color:var(--purple); margin-top:15px; display:none;">Uploading: <span id="percent">0</span>%</div>
+            </div>
+        </section>
+
+        <!-- Leave Requests Section -->
+        <section id="leave-tab">
+            <div class="card">
+                <h3 style="font-size:16px; margin-bottom:15px;" data-i18n="lbl_leave_title">Staff Leave Requests</h3>
+                <table>
+                    <thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_name">Name</th><th data-i18n="th_reason">Reason</th><th data-i18n="th_status">Status</th><th data-i18n="th_actions">Actions</th></tr></thead>
+                    <tbody id="leaveTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Register / Edit Form Card -->
+        <section id="add-tab">
+            <div class="card" style="max-width:550px; margin:auto; padding:35px;">
+                <h3 id="registerTitle" style="margin-bottom:25px; text-align:center; font-size:20px; font-weight:700;" data-i18n="title_register">Register Staff</h3>
+                <input type="hidden" id="editId">
+                
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_fullname">Full Name</label>
+                <input type="text" id="name" placeholder="John Doe">
+                
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_contract_type">Contract Status</label>
+                <select id="contractType">
+                    <option value="Contract" data-i18n="opt_contract">Contract Signed (တရားဝင် စာချုပ်ပါ)</option>
+                    <option value="Non-Contract" data-i18n="opt_non_contract">Non-Contract (စာချုပ်မရှိသူ)</option>
+                </select>
+
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_salary">Monthly Salary</label>
+                <input type="number" id="salary" placeholder="15000">
+                
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_floor">Floor Location</label>
+                <input type="text" id="role" list="floorOptions" placeholder="Select or Type Floor">
+                <datalist id="floorOptions">
+                    <option value="Office"></option>
+                    <option value="Floor 1"></option>
+                    <option value="Floor 2"></option>
+                    <option value="Floor 3"></option>
+                    <option value="Floor 4"></option>
+                    <option value="Floor 5"></option>
+                </datalist>
+
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_offday">Designated Off Day</label>
+                <select id="offDay">
+                    <option value="NO">NO (နားရက်မရှိ)</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Passport Exp</label>
+                        <input type="date" id="ppExp">
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Work Permit Exp</label>
+                        <input type="date" id="wpExp">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">90-Days Report</label>
+                <input type="date" id="report90">
+                
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_photo">Profile Photo</label>
+                <input type="file" onchange="previewImage(event)" style="background:white; padding:10px;">
+                
+                <button class="btn" style="width:100%; margin-top:15px; justify-content:center; padding:14px;" onclick="handleSave()"><i class="fas fa-save"></i> <span data-i18n="btn_save">Save Data</span></button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Unscheduled Day-Off Entry -->
+    <div id="unscheduledLeaveModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:12px; font-size:18px; font-weight:700;" data-i18n="modal_unscheduled_title">Unscheduled Day-Off Entry</h3>
+            <p id="leaveModalStaffName" style="font-size:13.5px; font-weight:600; color:var(--primary); margin-bottom:20px;"></p>
+            <input type="hidden" id="leaveStaffId">
+            <input type="hidden" id="leaveStaffNameInput">
+            
+            <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_date">Date</label>
+            <input type="date" id="unscheduledDate">
+            
+            <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_reason">Reason</label>
+            <input type="text" id="unscheduledReason" placeholder="Reason for leave...">
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" style="flex:1; justify-content:center; background:var(--danger);" onclick="submitUnscheduledLeave()"><i class="fas fa-check"></i> <span data-i18n="btn_confirm">Confirm</span></button>
+                <button class="btn" style="background:#cbd5e1; color:var(--text-main); flex:1; justify-content:center;" onclick="closeUnscheduledModal()" data-i18n="btn_cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile & Settings Modals -->
+    <div id="profileModal" class="modal"><div class="modal-content"><img id="m-photo" style="width:110px; height:110px; border-radius:24px; display:block; margin:0 auto 20px; object-fit:cover; border:3px solid #f1f5f9;"><h2 id="m-name" style="text-align:center; font-size:20px; font-weight:700; margin-bottom:15px;"></h2><div id="m-details" style="line-height:2.2; font-size:14px; background:#f8fafc; padding:15px; border-radius:12px; color:#475569;"></div><button class="btn" style="width:100%; margin-top:20px; background:var(--sidebar-bg); justify-content:center;" onclick="closeModal()" data-i18n="btn_close">Close</button></div></div>
+    <div id="adminModal" class="modal"><div class="modal-content"><h3 style="margin-bottom:20px; font-size:18px;" data-i18n="title_settings">Settings</h3><input type="text" id="newAdminId" placeholder="New ID"><input type="text" id="newAdminPass" placeholder="New Password"><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn" style="flex:1; justify-content:center;" onclick="updateAdminLogin()" data-i18n="btn_update">Update</button><button class="btn" style="background:#cbd5e1; color:var(--text-main); flex:1; justify-content:center;" onclick="closeAdminModal()" data-i18n="btn_cancel">Cancel</button></div></div></div>
+
+    <script>
+        // --- Internationalization (i18n) Translation Resource Object ---
+        const translations = {
+            mm: {
+                sec_main: "ပင်မ စနစ်", nav_dashboard: "ဒက်ရှ်ဘုတ်", nav_attendance: "တက်ရောက်မှု စာရင်း",
+                sec_finance: "ဘဏ္ဍာရေး", nav_loan: "ကြိုတင်ငွေ ထုတ်ယူမှု", nav_payroll: "လစာနှင့် အိုတီ စာရင်း",
+                sec_admin: "စီမံခန့်ခွဲမှု", nav_register: "ဝန်ထမ်း စာရင်းသွင်း", nav_notice: "အသိပေးချက် ဘုတ်",
+                nav_leave: "ခွင့်တိုင်ကြားချက်များ", nav_settings: "ပြင်ဆင်ချက်များ", title_dashboard: "စီမံခန့်ခွဲမှု ဒက်ရှ်ဘုတ်",
+                btn_logout: "ထွက်မည်", stat_total: "စုစုပေါင်း ဝန်ထမ်း", stat_working: "ယနေ့ အလုပ်ဆင်း",
+                stat_off: "ယနေ့ နားသူ", stat_tomorrow: "မနက်ဖြန် နားမည်သူ", lbl_contract_category: "စာချုပ် အမျိုးအစား:",
+                btn_all_types: "အားလုံး", btn_contract_staff: "စာချုပ်ပါ ဝန်ထမ်း", btn_non_contract_staff: "စာချုပ်မရှိသူ",
+                ph_search: "ဝန်ထမ်းအမည်ဖြင့် ရှာဖွေပါ...", th_photo: "ဓာတ်ပုံ", th_name: "အမည်",
+                th_contract_status: "စာချုပ် စတာတပ်စ်", th_floor: "နေရာ/Floor", th_status: "အခြေအနေ",
+                th_unscheduled_leave: "အထူးခွင့်/နားရက်", th_actions: "လုပ်ဆောင်ချက်", btn_view: "ကြည့်ရှုမည်",
+                th_att_status: "တက်ရောက်မှု", th_note: "မှတ်ချက်", ph_amount: "ပမာဏ", ph_note: "မှတ်ချက်",
+                btn_save_loan: "ကြိုတင်ငွေ သိမ်းဆည်းမည်", th_date: "ရက်စွဲ", th_amount: "ပမာဏ", ph_ot: "အိုတီ နာရီ",
+                ph_fine: "ဒဏ်ကြေး/ဖြတ်တောက်မှု", btn_save_payroll: "လစာစာရင်း သိမ်းမည်", th_month: "လ",
+                th_base_salary: "အခြေခံလစာ", th_ot_fine: "အိုတီ/ဒဏ်ကြေး", th_net_pay: "အသားတင် လစာ",
+                lbl_notice_title: "အသိပေးစာ လွှင့်ရန်", ph_notice_msg: "အသိပေးစာ ရေးသားရန်...", btn_post_notice: "စာတင်မည်",
+                lbl_video_title: "နေ့စဉ် ဗီဒီယို (MP4)", btn_upload_video: "တင်မည်", lbl_leave_title: "ဝန်ထမ်း ခွင့်တိုင်ကြားစာများ",
+                th_reason: "အကြောင်းပြချက်", title_register: "ဝန်ထမ်း စာရင်းသွင်းရန်", lbl_fullname: "အမည်အပြည့်အစုံ",
+                lbl_contract_type: "စာချုပ် အခြေအနေ", opt_contract: "Contract Signed (တရားဝင် စာချုပ်ပါ)",
+                opt_non_contract: "Non-Contract (စာချုပ်မရှိသူ)", lbl_salary: "လစာ", lbl_floor: "Floor နေရာ",
+                lbl_offday: "သတ်မှတ် နားရက်", lbl_photo: "ဓာတ်ပုံ", btn_save: "ဒေတာ သိမ်းဆည်းမည်",
+                modal_unscheduled_title: "အထူးခွင့် သတ်မှတ်ရန်", lbl_date: "ရက်စွဲ", lbl_reason: "အကြောင်းပြချက်",
+                btn_confirm: "အတည်ပြုမည်", btn_cancel: "မလုပ်တော့ပါ", btn_close: "ပိတ်မည်", title_settings: "ပြင်ဆင်ချက်များ",
+                btn_update: "ပြင်ဆင်မည်", badge_contract: "စာချုပ်ပါ", badge_non_contract: "စာချုပ်မရှိ"
+            },
+            th: {
+                sec_main: "ระบบหลัก", nav_dashboard: "แผงควบคุม", nav_attendance: "การเข้างาน",
+                sec_finance: "การเงิน", nav_loan: "เบิกล่วงหน้า", nav_payroll: "เงินเดือน & OT",
+                sec_admin: "การจัดการ", nav_register: "ลงทะเบียนพนักงาน", nav_notice: "กระดานข่าว",
+                nav_leave: "การลา", nav_settings: "ตั้งค่า", title_dashboard: "แผงบริหารจัดการ",
+                btn_logout: "ออกจากระบบ", stat_total: "พนักงานทั้งหมด", stat_working: "ทำงานวันนี้",
+                stat_off: "หยุดวันนี้", stat_tomorrow: "หยุดพรุ่งนี้", lbl_contract_category: "ประเภทสัญญา:",
+                btn_all_types: "ทั้งหมด", btn_contract_staff: "มีสัญญาจ้าง", btn_non_contract_staff: "ไม่มีสัญญา",
+                ph_search: "ค้นหาชื่อพนักงาน...", th_photo: "รูปถ่าย", th_name: "ชื่อ-สกุล",
+                th_contract_status: "สถานะสัญญา", th_floor: "แผนก/ชั้น", th_status: "สถานะ",
+                th_unscheduled_leave: "การลากิจ/พิเศษ", th_actions: "จัดการ", btn_view: "ดูข้อมูล",
+                th_att_status: "สถานะเข้างาน", th_note: "หมายเหตุ", ph_amount: "จำนวนเงิน", ph_note: "บันทึก",
+                btn_save_loan: "บันทึกการกู้", th_date: "วันที่", th_amount: "จำนวน", ph_ot: "ชั่วโมง OT",
+                ph_fine: "หัก/ค่าปรับ", btn_save_payroll: "บันทึกเงินเดือน", th_month: "เดือน",
+                th_base_salary: "เงินเดือนหลัก", th_ot_fine: "OT / หัก", th_net_pay: "สุทธิ",
+                lbl_notice_title: "ประกาศข่าวสาร", ph_notice_msg: "พิมพ์ข้อความ...", btn_post_notice: "โพสต์ประกาศ",
+                lbl_video_title: "วิดีโอประจำวัน (MP4)", btn_upload_video: "อัปโหลด", lbl_leave_title: "การขอลาของพนักงาน",
+                th_reason: "เหตุผล", title_register: "ลงทะเบียนพนักงาน", lbl_fullname: "ชื่อ-นามสกุล",
+                lbl_contract_type: "สถานะสัญญาจ้าง", opt_contract: "มีสัญญาจ้าง (Contract)",
+                opt_non_contract: "ไม่มีสัญญาจ้าง (Non-Contract)", lbl_salary: "เงินเดือน", lbl_floor: "ประจำชั้น",
+                lbl_offday: "วันหยุดประจำสัปดาห์", lbl_photo: "รูปถ่าย", btn_save: "บันทึกข้อมูล",
+                modal_unscheduled_title: "บันทึกการหยุดพิเศษ", lbl_date: "วันที่", lbl_reason: "เหตุผล",
+                btn_confirm: "ยืนยัน", btn_cancel: "ยกเลิก", btn_close: "ปิด", title_settings: "ตั้งค่าระบบ",
+                btn_update: "อัปเดต", badge_contract: "มีสัญญา", badge_non_contract: "ไม่มีสัญญา"
+            },
+            zh: {
+                sec_main: "核心系统", nav_dashboard: "仪表板", nav_attendance: "考勤记录",
+                sec_finance: "财务管理", nav_loan: "借款记录", nav_payroll: "薪资与加班",
+                sec_admin: "行政管理", nav_register: "员工注册", nav_notice: "公告栏",
+                nav_leave: "请假申请", nav_settings: "系统设置", title_dashboard: "管理仪表板",
+                btn_logout: "退出登录", stat_total: "员工总数", stat_working: "今日上班",
+                stat_off: "今日休息", stat_tomorrow: "明日休息", lbl_contract_category: "合同类型:",
+                btn_all_types: "全部", btn_contract_staff: "正式合同员工", btn_non_contract_staff: "无合同员工",
+                ph_search: "按姓名搜索...", th_photo: "照片", th_name: "姓名",
+                th_contract_status: "合同状态", th_floor: "部门/楼层", th_status: "状态",
+                th_unscheduled_leave: "特假/请假", th_actions: "操作", btn_view: "查看",
+                th_att_status: "考勤状态", th_note: "备注", ph_amount: "金额", ph_note: "备注",
+                btn_save_loan: "保存借款", th_date: "日期", th_amount: "金额", ph_ot: "加班小时",
+                ph_fine: "罚款/扣款", btn_save_payroll: "保存薪资记录", th_month: "月份",
+                th_base_salary: "基本工资", th_ot_fine: "加班/扣款", th_net_pay: "实发工资",
+                lbl_notice_title: "发布公告", ph_notice_msg: "请输入公告内容...", btn_post_notice: "发布",
+                lbl_video_title: "每日视频 (MP4)", btn_upload_video: "上传", lbl_leave_title: "员工请假申请",
+                th_reason: "事由", title_register: "注册新员工", lbl_fullname: "全名",
+                lbl_contract_type: "合同状态", opt_contract: "已签合同 (Contract)",
+                opt_non_contract: "未签合同 (Non-Contract)", lbl_salary: "月薪", lbl_floor: "工作楼层",
+                lbl_offday: "固定休息日", lbl_photo: "个人照片", btn_save: "保存数据",
+                modal_unscheduled_title: "登记临时请假", lbl_date: "日期", lbl_reason: "事由",
+                btn_confirm: "确认", btn_cancel: "取消", btn_close: "关闭", title_settings: "设置",
+                btn_update: "更新", badge_contract: "有合同", badge_non_contract: "无合同"
+            }
+        };
+
+        let currentLang = localStorage.getItem("app_lang") || "mm";
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem("app_lang", lang);
+            document.getElementById("langSelect").value = lang;
+
+            // Apply Text Content Translation
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            // Apply Placeholder Translation
+            document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+                const key = el.getAttribute("data-i18n-ph");
+                if (translations[lang] && translations[lang][key]) {
+                    el.setAttribute("placeholder", translations[lang][key]);
+                }
+            });
+
+            renderTable();
+        }
+
+        // Firebase Config
+        const firebaseConfig = { apiKey: "AIzaSyDY8o3RX38-NlRkKeOC6gHWtfKXPcaxas", authDomain: "mgjen-8b4f5.firebaseapp.com", projectId: "mgjen-8b4f5", storageBucket: "mgjen-8b4f5.firebasestorage.app", messagingSenderId: "685152708249", appId: "1:685152708249:web:6334e940e8306f0ff6ba08" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.firestore(); const storage = firebase.storage();
+
+        let allStaff = [], currentBase64 = "", filterFloor = 'All', filterContract = 'All', filterStatus = 'all', todayAttendanceMap = {};
+        const daysArray = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const todayName = daysArray[new Date().getDay()];
+        const tomorrowIndex = (new Date().getDay() + 1) % 7;
+        const tomorrowName = daysArray[tomorrowIndex];
+
+        const getTodayDateString = () => {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        };
+
+        async function init() {
+            changeLanguage(currentLang);
+            if(sessionStorage.getItem("isLoggedIn") !== "true") { document.getElementById('loginOverlay').style.display = 'flex'; return; }
+            document.getElementById('loginOverlay').style.display = 'none';
+            await fetchTodayAttendance();
+            await loadData();
+            listenToLeaves();
+            listenToNotice();
+        }
+
+        async function fetchTodayAttendance() {
+            const tDate = getTodayDateString();
+            const snap = await db.collection("attendance").where("date", "==", tDate).get();
+            todayAttendanceMap = snap.docs.reduce((acc, d) => ({...acc, [d.data().staffId]: d.data()}), {});
+        }
+
+        async function loadData() {
+            const sSnap = await db.collection("employees").orderBy("name").get();
+            allStaff = sSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            const lSnap = await db.collection("loans").orderBy("date", "desc").get();
+            renderLoanTable(lSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            
+            const salSnap = await db.collection("salary_records").orderBy("month", "desc").get();
+            renderSalaryTable(salSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+            updateStats(); renderTable(); createFloorButtons(); updateDropdowns();
+        }
+
+        function setContractFilter(type, event) {
+            filterContract = type;
+            document.querySelectorAll('.contract-btn').forEach(btn => btn.classList.remove('active'));
+            if(event) event.currentTarget.classList.add('active');
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            let filtered = allStaff.filter(e => e.name.toLowerCase().includes(document.getElementById('searchBox').value.toLowerCase()));
+            
+            if(filterFloor !== 'All') filtered = filtered.filter(e => e.role === filterFloor);
+            if(filterContract !== 'All') filtered = filtered.filter(e => (e.contractType || 'Contract') === filterContract);
+
+            if(filterStatus === 'working') filtered = filtered.filter(e => e.offDay !== todayName && todayAttendanceMap[e.id]?.status !== 'Absent');
+            if(filterStatus === 'off') filtered = filtered.filter(e => e.offDay === todayName || todayAttendanceMap[e.id]?.status === 'Absent');
+            if(filterStatus === 'tomorrow') filtered = filtered.filter(e => e.offDay === tomorrowName);
+
+            tbody.innerHTML = filtered.map(emp => {
+                let badgeClass = 'badge-on';
+                let currentStatusText = emp.offDay === 'NO' ? 'Continuous' : emp.offDay;
+
+                if (emp.offDay === todayName) { badgeClass = 'badge-off'; } 
+                else if (emp.offDay === tomorrowName) { badgeClass = 'badge-tomorrow'; }
+
+                const attRecord = todayAttendanceMap[emp.id];
+                if(attRecord) {
+                    if(attRecord.status === 'Present') {
+                        badgeClass = 'badge-on';
+                        currentStatusText = (emp.offDay === 'NO' ? 'Continuous' : emp.offDay) + " (Active)";
+                    } else if(attRecord.status === 'Absent') {
+                        badgeClass = 'badge-off';
+                        currentStatusText = "Off (Special Leave)";
+                    }
+                }
+
+                const showForcePresentBtn = (filterStatus === 'off') && (emp.offDay === todayName) && (!attRecord || attRecord.status !== 'Present');
+                const forcePresentBtnHtml = showForcePresentBtn ? 
+                    `<button class="btn-force-present" onclick="markAsForcePresent('${emp.id}')"><i class="fas fa-check-circle"></i> Punch In</button>` : '';
+
+                let leaveActionColumn = "";
+                if (attRecord && attRecord.status === 'Absent') {
+                    leaveActionColumn = `<span class="badge badge-off"><i class="fas fa-user-slash"></i> Special Leave</span>`;
+                } else if (emp.offDay === todayName) {
+                    leaveActionColumn = `<span style="font-size:12px; color:var(--text-muted); font-weight:500;">Scheduled Off</span>`;
+                } else {
+                    leaveActionColumn = `<button class="btn-off-manual" onclick="openUnscheduledModal('${emp.id}', '${emp.name}')"><i class="fas fa-bed"></i> Special Leave</button>`;
+                }
+
+                const isContract = (emp.contractType || 'Contract') === 'Contract';
+                const contractBadge = isContract 
+                    ? `<span class="badge badge-contract"><i class="fas fa-file-signature"></i> ${translations[currentLang].badge_contract}</span>`
+                    : `<span class="badge badge-non-contract"><i class="fas fa-user-tag"></i> ${translations[currentLang].badge_non_contract}</span>`;
+
+                return `<tr>
+                    <td><div class="table-photo-container"><img src="${emp.photo}" class="table-photo" onclick="openProfile('${emp.id}')"></div></td>
+                    <td><strong style="color:#0f172a; font-weight:600;">${emp.name}</strong></td>
+                    <td>${contractBadge}</td>
+                    <td><span style="background:#f1f5f9; padding:6px 10px; border-radius:6px; font-weight:500; font-size:13px;">${emp.role}</span></td>
+                    <td><span class="badge ${badgeClass}">${currentStatusText}</span></td>
+                    <td>${leaveActionColumn}</td>
+                    <td>
+                        ${forcePresentBtnHtml}
+                        <i class="fas fa-pen action-icon edit" title="Edit" onclick="editStaff('${emp.id}')"></i>
+                        <i class="fas fa-trash-alt action-icon delete" title="Delete" onclick="deleteDoc('employees','${emp.id}')"></i>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openUnscheduledModal(staffId, staffName) {
+            document.getElementById('leaveStaffId').value = staffId;
+            document.getElementById('leaveStaffNameInput').value = staffName;
+            document.getElementById('leaveModalStaffName').innerText = "Employee: " + staffName;
+            document.getElementById('unscheduledDate').value = getTodayDateString();
+            document.getElementById('unscheduledReason').value = "";
+            document.getElementById('unscheduledLeaveModal').style.display = 'flex';
+        }
+
+        function closeUnscheduledModal() { document.getElementById('unscheduledLeaveModal').style.display = 'none'; }
+
+        async function submitUnscheduledLeave() {
+            const staffId = document.getElementById('leaveStaffId').value;
+            const staffName = document.getElementById('leaveStaffNameInput').value;
+            const date = document.getElementById('unscheduledDate').value;
+            const reason = document.getElementById('unscheduledReason').value || "Special Leave";
+
+            if(!date) return alert("Select date.");
+
+            try {
+                await db.collection("attendance").doc(`${staffId}_${date}`).set({
+                    staffId: staffId, date: date, status: "Absent", note: "Special Off: " + reason
+                }, { merge: true });
+
+                await db.collection("leave_requests").add({
+                    staffName: staffName, reason: "[Admin Override] " + reason, status: "Approved", submittedAt: new Date().toLocaleString()
+                });
+
+                closeUnscheduledModal();
+                await fetchTodayAttendance();
+                await loadData();
+            } catch (error) { alert("Error: " + error.message); }
+        }
+
+        function editStaff(id) {
+            const emp = allStaff.find(e => e.id === id);
+            document.getElementById('editId').value = id;
+            document.getElementById('name').value = emp.name;
+            document.getElementById('contractType').value = emp.contractType || 'Contract';
+            document.getElementById('salary').value = emp.salary || '';
+            document.getElementById('role').value = emp.role;
+            document.getElementById('offDay').value = emp.offDay;
+            document.getElementById('ppExp').value = emp.ppExp || '';
+            document.getElementById('wpExp').value = emp.wpExp || '';
+            document.getElementById('report90').value = emp.report90 || '';
+            currentBase64 = emp.photo || '';
+            
+            document.getElementById('registerTitle').innerText = "Modify Employee Profile";
+            switchTab('add');
+        }
+
+        function clearAndSwitchToAdd() {
+            document.getElementById('editId').value = "";
+            document.getElementById('name').value = "";
+            document.getElementById('contractType').value = "Contract";
+            document.getElementById('salary').value = "";
+            document.getElementById('role').value = "";
+            document.getElementById('offDay').value = "NO";
+            document.getElementById('ppExp').value = "";
+            document.getElementById('wpExp').value = "";
+            document.getElementById('report90').value = "";
+            currentBase64 = "";
+            
+            document.getElementById('registerTitle').innerText = translations[currentLang].title_register;
+            switchTab('add');
+        }
+
+        async function markAsForcePresent(staffId) {
+            const tDate = getTodayDateString();
+            if(confirm("Confirm temporary attendance switch?")) {
+                try {
+                    await db.collection("attendance").doc(`${staffId}_${tDate}`).set({
+                        staffId: staffId, date: tDate, status: "Present", note: "Worked on Day-Off"
+                    }, { merge: true });
+                    await fetchTodayAttendance(); await loadData();
+                } catch (error) { alert("Error: " + error.message); }
+            }
+        }
+
+        function listenToLeaves() {
+            db.collection("leave_requests").orderBy("submittedAt", "desc").onSnapshot(snap => {
+                const tbody = document.getElementById('leaveTableBody');
+                tbody.innerHTML = snap.docs.map(doc => {
+                    const l = doc.data();
+                    const sClass = `badge badge-${l.status ? l.status.toLowerCase() : 'pending'}`;
+                    return `<tr>
+                        <td>${l.submittedAt || '-'}</td>
+                        <td><strong>${l.staffName}</strong></td>
+                        <td>${l.reason}</td>
+                        <td><span class="${sClass}">${l.status || 'Pending'}</span></td>
+                        <td>
+                            <button class="btn" style="background:var(--success); padding:6px 12px; font-size:12px; border-radius:6px;" onclick="updateLeaveStatus('${doc.id}','Approved')">Approve</button>
+                            <button class="btn" style="background:var(--danger); padding:6px 12px; font-size:12px; border-radius:6px;" onclick="updateLeaveStatus('${doc.id}','Rejected')">Deny</button>
+                            <i class="fas fa-trash-alt action-icon delete" style="margin-left:10px;" onclick="deleteDoc('leave_requests','${doc.id}')"></i>
+                        </td>
+                    </tr>`;
+                }).join('');
+            });
+        }
+        async function updateLeaveStatus(id, status) { await db.collection("leave_requests").doc(id).update({status}); }
+
+        async function uploadDailyVideo() {
+            const file = document.getElementById('videoFile').files[0];
+            if(!file) return alert("Select media file.");
+            const btn = document.getElementById('uploadBtn'); const statusDiv = document.getElementById('uploadStatus');
+            btn.disabled = true; statusDiv.style.display = 'block';
+            const storageRef = storage.ref('daily_video.mp4'); const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', 
+                (snap) => { document.getElementById('percent').innerText = Math.round((snap.bytesTransferred / snap.totalBytes) * 100); }, 
+                (err) => { alert(err.message); btn.disabled = false; }, 
+                async () => {
+                    const url = await storageRef.getDownloadURL();
+                    await db.collection("admin_config").doc("video_content").set({ videoUrl: url, updatedAt: new Date().toLocaleString() });
+                    alert("Media updated!"); btn.disabled = false; statusDiv.style.display = 'none';
+                    document.getElementById('videoFile').value = "";
+                }
+            );
+        }
+
+        async function postNotice() {
+            const msg = document.getElementById('noticeText').value; if(!msg) return alert("Enter content.");
+            await db.collection("admin_config").doc("notice_board").set({ message: msg, postedAt: new Date().toLocaleString() });
+            alert("Broadcast posted!");
+        }
+        function listenToNotice() {
+            db.collection("admin_config").doc("notice_board").onSnapshot(doc => {
+                if(doc.exists) document.getElementById('displayNoticeMsg').innerText = "Notice: " + doc.data().message;
+            });
+        }
+
+        async function loadAttendance() {
+            const date = document.getElementById('attDate').value; if(!date) return;
+            const snap = await db.collection("attendance").where("date", "==", date).get();
+            const attData = snap.docs.reduce((acc, d) => ({...acc, [d.data().staffId]: d.data()}), {});
+            document.getElementById('attTableBody').innerHTML = allStaff.map(emp => {
+                const status = attData[emp.id]?.status || (emp.offDay === todayName ? 'OFF' : 'Present');
+                return `<tr><td><strong>${emp.name}</strong></td><td>${emp.role}</td><td><select onchange="saveAtt('${emp.id}','${date}',this.value)" style="margin-bottom:0; padding:6px 12px;"><option value="Present" ${status==='Present'?'selected':''}>Present</option><option value="Absent" ${status==='Absent'?'selected':''}>Absent</option><option value="OFF" ${status==='OFF'?'selected':''}>OFF</option></select></td><td><input type="text" onblur="saveAttNote('${emp.id}','${date}',this.value)" value="${attData[emp.id]?.note || ''}" style="margin-bottom:0; padding:6px 12px;"></td></tr>`;
+            }).join('');
+        }
+        async function saveAtt(id, date, status) { await db.collection("attendance").doc(`${id}_${date}`).set({ staffId: id, date, status }, {merge: true}); }
+        async function saveAttNote(id, date, note) { await db.collection("attendance").doc(`${id}_${date}`).set({ note }, {merge: true}); }
+
+        async function addLoan() { await db.collection("loans").add({ staffName: document.getElementById('loanStaffName').value, amount: document.getElementById('loanAmount').value, note: document.getElementById('loanNote').value, date: new Date().toLocaleDateString() }); loadData(); }
+        async function addSalaryRecord() {
+            const name = document.getElementById('salStaffName').value; const emp = allStaff.find(s => s.name === name);
+            const ot = Number(document.getElementById('salOT').value), fine = Number(document.getElementById('salFine').value);
+            const net = (Number(emp.salary) + (ot * 100)) - fine;
+            await db.collection("salary_records").add({ name, base: emp.salary, ot, fine, net, month: document.getElementById('salMonth').value });
+            loadData();
+        }
+        function renderLoanTable(data) { document.getElementById('loanTableBody').innerHTML = data.map(l => `<tr><td>${l.date}</td><td><strong>${l.staffName}</strong></td><td>$${l.amount}</td><td>${l.note}</td><td><i class="fas fa-trash-alt action-icon delete" onclick="deleteDoc('loans','${l.id}')"></i></td></tr>`).join(''); }
+        function renderSalaryTable(data) { document.getElementById('salaryTableBody').innerHTML = data.map(s => `<tr><td>${s.month}</td><td><strong>${s.name}</strong></td><td>$${s.base}</td><td>+ $${s.ot*100} / - $${s.fine}</td><td><strong style="color:var(--success)">$${s.net}</strong></td><td><i class="fas fa-trash-alt action-icon delete" onclick="deleteDoc('salary_records','${s.id}')"></i></td></tr>`).join(''); }
+
+        async function deleteDoc(col, id) { if(confirm("Confirm delete?")) { await db.collection(col).doc(id).delete(); loadData(); } }
+        
+        async function handleSave() {
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('name').value;
+            const contractType = document.getElementById('contractType').value;
+            const role = document.getElementById('role').value;
+            const salary = document.getElementById('salary').value;
+            const offDay = document.getElementById('offDay').value;
+
+            if(!name || !role || !salary) return alert("Validation failed.");
+
+            const data = { 
+                name: name, 
+                contractType: contractType,
+                role: role, 
+                salary: salary, 
+                offDay: offDay, 
+                ppExp: document.getElementById('ppExp').value, 
+                wpExp: document.getElementById('wpExp').value, 
+                report90: document.getElementById('report90').value, 
+                photo: currentBase64 || "https://via.placeholder.com/150"
+            };
+
+            if(id) { await db.collection("employees").doc(id).update(data); } 
+            else { await db.collection("employees").add(data); }
+            location.reload();
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.getElementById(t + '-tab').classList.add('active');
+            document.querySelectorAll('.sidebar li').forEach(l => l.classList.remove('active'));
+            if(document.getElementById('btn-'+t)) document.getElementById('btn-'+t).classList.add('active');
+        }
+        
+        function setFilter(t, v) { 
+            if(t==='status') {
+                filterStatus=v;
+                document.querySelectorAll('.stat-card').forEach(c => c.style.borderColor = "#edf2f7");
+                if(v === 'tomorrow') document.getElementById('tomorrowCard').style.borderColor = "var(--purple)";
+            } else {
+                filterFloor=v;
+                document.querySelectorAll('.floor-btn').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
+            }
+            renderTable(); 
+        }
+        
+        function updateStats() {
+            let actualOffTodayCount = 0;
+            allStaff.forEach(e => {
+                const att = todayAttendanceMap[e.id];
+                if(e.offDay === todayName || (att && att.status === 'Absent')) {
+                    if(!att || att.status !== 'Present') actualOffTodayCount++;
+                }
+            });
+            const tomorrowOff = allStaff.filter(e => e.offDay === tomorrowName).length;
+            document.getElementById('totalCount').innerText = allStaff.length;
+            document.getElementById('workingCount').innerText = allStaff.length - actualOffTodayCount;
+            document.getElementById('offCount').innerText = actualOffTodayCount;
+            document.getElementById('tomorrowOffCount').innerText = tomorrowOff;
+        }
+        
+        function createFloorButtons() {
+            const floors = [...new Set(allStaff.map(s => s.role))].sort();
+            let html = `<button class="floor-btn active" onclick="setFilter('floor','All')">All Sectors</button>`;
+            floors.forEach(f => { html += `<button class="floor-btn" onclick="setFilter('floor','${f}')">${f}</button>`; });
+            document.getElementById('floorBtnsContainer').innerHTML = html;
+        }
+
+        function updateDropdowns() { const opt = `<option value="">Select Employee</option>` + allStaff.map(s => `<option value="${s.name}">${s.name}</option>`).join(''); document.getElementById('loanStaffName').innerHTML = opt; document.getElementById('salStaffName').innerHTML = opt; }
+        function previewImage(e) { const r = new FileReader(); r.onload = () => currentBase64 = r.result; r.readAsDataURL(e.target.files[0]); }
+        
+        function openProfile(id) {
+            const emp = allStaff.find(e => e.id === id);
+            document.getElementById('m-photo').src = emp.photo;
+            document.getElementById('m-name').innerText = emp.name;
+            document.getElementById('m-details').innerHTML = `📝 Agreement: ${emp.contractType || 'Contract'}<br>📍 Area Sector: ${emp.role}<br>🗓️ Standard Off-Day: ${emp.offDay}<br>💰 Salary Base: $${emp.salary}<br>Passport Locked: ${emp.ppExp || '-'}<br>Work Permit: ${emp.wpExp || '-'}`;
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('profileModal').style.display = 'none'; }
+        function openAdminSettings() { document.getElementById('adminModal').style.display = 'flex'; }
+        function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; }
+        async function updateAdminLogin() { 
+            await db.collection("admin_config").doc("login_info").set({uid: document.getElementById('newAdminId').value, pass: document.getElementById('newAdminPass').value});
+            handleLogout();
+        }
+        function handleLogin() { if(document.getElementById('loginUser').value === "admin" && document.getElementById('loginPass').value === "1234") { sessionStorage.setItem("isLoggedIn", "true"); location.reload(); } else alert("Authentication Failed"); }
+        function handleLogout() { sessionStorage.removeItem("isLoggedIn"); location.reload(); }
+        
+        init();
+    </script>
+</body>
+</html>

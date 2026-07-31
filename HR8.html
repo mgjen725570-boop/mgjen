@@ -97,8 +97,13 @@
         .badge-pending { background: #fef3c7; color: var(--warning); }
         .badge-contract { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
         .badge-non-contract { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+        .badge-absent-count { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; font-weight: 700; }
+        
+        /* Count Badge Style for Category Buttons */
+        .count-pill { background: #e2e8f0; color: #0f172a; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+        .contract-btn.active .count-pill { background: white; color: var(--primary); }
 
-        .floor-btn, .contract-btn { padding: 8px 16px; background: white; border: 1.5px solid #e2e8f0; color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .floor-btn, .contract-btn { padding: 8px 16px; background: white; border: 1.5px solid #e2e8f0; color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; }
         .floor-btn:hover, .contract-btn:hover { border-color: var(--primary); color: var(--primary); }
         .floor-btn.active, .contract-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
 
@@ -198,12 +203,12 @@
                 </div>
             </div>
 
-            <!-- Contract Type Filter Bar -->
+            <!-- Contract Type Filter Bar with Counter Badges -->
             <div style="margin-bottom:12px; display:flex; gap:8px; align-items:center;">
                 <span style="font-size:13px; font-weight:600; color:var(--text-muted); margin-right:5px;" data-i18n="lbl_contract_category">Contract Category:</span>
-                <button class="contract-btn active" onclick="setContractFilter('All', event)" data-i18n="btn_all_types">All Types</button>
-                <button class="contract-btn" onclick="setContractFilter('Contract', event)"><i class="fas fa-file-contract" style="color:var(--primary);"></i> <span data-i18n="btn_contract_staff">Contract Staff</span></button>
-                <button class="contract-btn" onclick="setContractFilter('Non-Contract', event)"><i class="fas fa-user-clock" style="color:var(--text-muted);"></i> <span data-i18n="btn_non_contract_staff">Non-Contract Staff</span></button>
+                <button class="contract-btn active" onclick="setContractFilter('All', event)"><span data-i18n="btn_all_types">All Types</span> <span class="count-pill" id="cntAll">0</span></button>
+                <button class="contract-btn" onclick="setContractFilter('Contract', event)"><i class="fas fa-file-contract" style="color:var(--primary); margin-right: 5px;"></i> <span data-i18n="btn_contract_staff">Contract Staff</span> <span class="count-pill" id="cntContract">0</span></button>
+                <button class="contract-btn" onclick="setContractFilter('Non-Contract', event)"><i class="fas fa-user-clock" style="color:var(--text-muted); margin-right: 5px;"></i> <span data-i18n="btn_non_contract_staff">Non-Contract Staff</span> <span class="count-pill" id="cntNonContract">0</span></button>
             </div>
 
             <div id="floorBtnsContainer" style="margin-bottom:20px; display:flex; gap:8px; flex-wrap:wrap;"></div>
@@ -220,6 +225,7 @@
                             <th data-i18n="th_name">Name</th>
                             <th data-i18n="th_contract_status">Contract Status</th>
                             <th data-i18n="th_floor">Floor</th>
+                            <th data-i18n="th_absent_days">အလုပ်ပျက်ရက်များ</th>
                             <th data-i18n="th_status">Off Days</th>
                             <th data-i18n="th_unscheduled_leave">Today Status</th>
                             <th data-i18n="th_actions">Actions</th>
@@ -309,12 +315,15 @@
                 
                 <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_contract_type">Contract Status</label>
                 <select id="contractType">
-                    <option value="Contract" data-i18n="opt_contract">Contract Signed (တရားဝင် စာချုပ်ပါ)</option>
-                    <option value="Non-Contract" data-i18n="opt_non_contract">Non-Contract (စာချုပ်မရှိသူ)</option>
+                    <option value="Contract" data-i18n="opt_contract">စာချုပ်ပါ ဝန်ထမ်း (Contract)</option>
+                    <option value="Non-Contract" data-i18n="opt_non_contract">စာချုပ်မရှိသူ (Non-Contract)</option>
                 </select>
 
                 <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_salary">Monthly Salary</label>
                 <input type="number" id="salary" placeholder="15000">
+
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_absent_days">အလုပ်ပျက်ရက်များ (Absent Days)</label>
+                <input type="number" id="absentDays" step="0.5" min="0" placeholder="0 or 1.5">
                 
                 <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;" data-i18n="lbl_floor">Floor Location</label>
                 <input type="text" id="role" list="floorOptions" placeholder="Select or Type Floor">
@@ -398,7 +407,7 @@
                 stat_off: "ယနေ့ နားသူ", stat_tomorrow: "မနက်ဖြန် နားမည်သူ", lbl_contract_category: "စာချုပ် အမျိုးအစား:",
                 btn_all_types: "အားလုံး", btn_contract_staff: "စာချုပ်ပါ ဝန်ထမ်း", btn_non_contract_staff: "စာချုပ်မရှိသူ",
                 ph_search: "ဝန်ထမ်းအမည်ဖြင့် ရှာဖွေပါ...", th_photo: "ဓာတ်ပုံ", th_name: "အမည်",
-                th_contract_status: "စာချုပ် စတာတပ်စ်", th_floor: "နေရာ/FLOOR", th_status: "အလုပ်နားရက်များ",
+                th_contract_status: "စာချုပ် စတာတပ်စ်", th_floor: "နေရာ/FLOOR", th_absent_days: "အလုပ်ပျက်ရက်များ", th_status: "အလုပ်နားရက်များ",
                 th_unscheduled_leave: "ယနေ့အလုပ်ဆင်း/နား", th_actions: "လုပ်ဆောင်ချက်", btn_view: "ကြည့်ရှုမည်",
                 th_att_status: "တက်ရောက်မှု", th_note: "မှတ်ချက်", ph_amount: "ပမာဏ", ph_note: "မှတ်ချက်",
                 btn_save_loan: "ကြိုတင်ငွေ သိမ်းဆည်းမည်", th_date: "ရက်စွဲ", th_amount: "ပမာဏ", ph_ot: "အိုတီ နာရီ",
@@ -407,8 +416,8 @@
                 lbl_notice_title: "အသိပေးစာ လွှင့်ရန်", ph_notice_msg: "အသိပေးစာ ရေးသားရန်...", btn_post_notice: "စာတင်မည်",
                 lbl_video_title: "နေ့စဉ် ဗီဒီယို (MP4)", btn_upload_video: "တင်မည်", lbl_leave_title: "ဝန်ထမ်း ခွင့်တိုင်ကြားစာများ",
                 th_reason: "အကြောင်းပြချက်", title_register: "ဝန်ထမ်း စာရင်းသွင်းရန်", lbl_fullname: "အမည်အပြည့်အစုံ",
-                lbl_contract_type: "စာချုပ် အခြေအနေ", opt_contract: "Contract Signed (တရားဝင် စာချုပ်ပါ)",
-                opt_non_contract: "Non-Contract (စာချုပ်မရှိသူ)", lbl_salary: "လစာ", lbl_floor: "Floor နေရာ",
+                lbl_contract_type: "စာချုပ် အခြေအနေ", opt_contract: "စာချုပ်ပါ ဝန်ထမ်း (Contract)",
+                opt_non_contract: "စာချုပ်မရှိသူ (Non-Contract)", lbl_salary: "လစာ", lbl_absent_days: "အလုပ်ပျက်ရက်များ", lbl_floor: "Floor နေရာ",
                 lbl_offday: "သတ်မှတ် နားရက်", lbl_photo: "ဓာတ်ပုံ", btn_save: "ဒေတာ သိမ်းဆည်းမည်",
                 modal_unscheduled_title: "အထူးခွင့် သတ်မှတ်ရန်", lbl_date: "ရက်စွဲ", lbl_reason: "အကြောင်းပြချက်",
                 btn_confirm: "အတည်ပြုမည်", btn_cancel: "မလုပ်တော့ပါ", btn_close: "ပိတ်မည်", title_settings: "ပြင်ဆင်ချက်များ",
@@ -423,7 +432,7 @@
                 stat_off: "หยุดวันนี้", stat_tomorrow: "หยุดพรุ่งนี้", lbl_contract_category: "ประเภทสัญญา:",
                 btn_all_types: "ทั้งหมด", btn_contract_staff: "มีสัญญาจ้าง", btn_non_contract_staff: "ไม่มีสัญญา",
                 ph_search: "ค้นหาชื่อพนักงาน...", th_photo: "รูปถ่าย", th_name: "ชื่อ-สกุล",
-                th_contract_status: "สถานะสัญญา", th_floor: "แผนก/FLOOR", th_status: "วันหยุดประจำ",
+                th_contract_status: "สถานะสัญญา", th_floor: "แผนก/FLOOR", th_absent_days: "วันขาดงาน", th_status: "วันหยุดประจำ",
                 th_unscheduled_leave: "สถานะวันนี้", th_actions: "จัดการ", btn_view: "ดูข้อมูล",
                 th_att_status: "สถานะเข้างาน", th_note: "หมายเหตุ", ph_amount: "จำนวนเงิน", ph_note: "บันทึก",
                 btn_save_loan: "บันทึกการกู้", th_date: "วันที่", th_amount: "จำนวน", ph_ot: "ชั่วโมง OT",
@@ -433,7 +442,7 @@
                 lbl_video_title: "วิดีโอประจำวัน (MP4)", btn_upload_video: "อัปโหลด", lbl_leave_title: "การขอลาของพนักงาน",
                 th_reason: "เหตุผล", title_register: "ลงทะเบียนพนักงาน", lbl_fullname: "ชื่อ-นามสกุล",
                 lbl_contract_type: "สถานะสัญญาจ้าง", opt_contract: "มีสัญญาจ้าง (Contract)",
-                opt_non_contract: "ไม่มีสัญญาจ้าง (Non-Contract)", lbl_salary: "เงินเดือน", lbl_floor: "ประจำชั้น",
+                opt_non_contract: "ไม่มีสัญญาจ้าง (Non-Contract)", lbl_salary: "เงินเดือน", lbl_absent_days: "วันขาดงาน", lbl_floor: "ประจำชั้น",
                 lbl_offday: "วันหยุดประจำสัปดาห์", lbl_photo: "รูปถ่าย", btn_save: "บันทึกข้อมูล",
                 modal_unscheduled_title: "บันทึกการหยุดพิเศษ", lbl_date: "วันที่", lbl_reason: "เหตุผล",
                 btn_confirm: "ยืนยัน", btn_cancel: "ยกเลิก", btn_close: "ปิด", title_settings: "ตั้งค่าระบบ",
@@ -448,7 +457,7 @@
                 stat_off: "今日休息", stat_tomorrow: "明日休息", lbl_contract_category: "合同类型:",
                 btn_all_types: "全部", btn_contract_staff: "正式合同员工", btn_non_contract_staff: "无合同员工",
                 ph_search: "按姓名搜索...", th_photo: "照片", th_name: "姓名",
-                th_contract_status: "合同状态", th_floor: "部门/FLOOR", th_status: "固定休息日",
+                th_contract_status: "合同状态", th_floor: "部门/FLOOR", th_absent_days: "缺勤/请假天数", th_status: "固定休息日",
                 th_unscheduled_leave: "今日状态", th_actions: "操作", btn_view: "查看",
                 th_att_status: "考勤状态", th_note: "备注", ph_amount: "金额", ph_note: "备注",
                 btn_save_loan: "保存借款", th_date: "日期", th_amount: "金额", ph_ot: "加班小时",
@@ -458,7 +467,7 @@
                 lbl_video_title: "每日视频 (MP4)", btn_upload_video: "上传", lbl_leave_title: "员工请假申请",
                 th_reason: "事由", title_register: "注册新员工", lbl_fullname: "全名",
                 lbl_contract_type: "合同状态", opt_contract: "已签合同 (Contract)",
-                opt_non_contract: "未签合同 (Non-Contract)", lbl_salary: "月薪", lbl_floor: "工作楼层",
+                opt_non_contract: "未签合同 (Non-Contract)", lbl_salary: "月薪", lbl_absent_days: "缺勤/请假天数", lbl_floor: "工作楼层",
                 lbl_offday: "固定休息日", lbl_photo: "个人照片", btn_save: "保存数据",
                 modal_unscheduled_title: "登记临时请假", lbl_date: "日期", lbl_reason: "事由",
                 btn_confirm: "确认", btn_cancel: "取消", btn_close: "关闭", title_settings: "设置",
@@ -473,7 +482,6 @@
             localStorage.setItem("app_lang", lang);
             document.getElementById("langSelect").value = lang;
 
-            // Apply Text Content Translation
             document.querySelectorAll("[data-i18n]").forEach(el => {
                 const key = el.getAttribute("data-i18n");
                 if (translations[lang] && translations[lang][key]) {
@@ -481,7 +489,6 @@
                 }
             });
 
-            // Apply Placeholder Translation
             document.querySelectorAll("[data-i18n-ph]").forEach(el => {
                 const key = el.getAttribute("data-i18n-ph");
                 if (translations[lang] && translations[lang][key]) {
@@ -590,11 +597,14 @@
                     ? `<span class="badge badge-contract"><i class="fas fa-file-signature"></i> ${translations[currentLang].badge_contract}</span>`
                     : `<span class="badge badge-non-contract"><i class="fas fa-user-tag"></i> ${translations[currentLang].badge_non_contract}</span>`;
 
+                const absentDaysCount = emp.absentDays !== undefined && emp.absentDays !== "" ? emp.absentDays : 0;
+
                 return `<tr>
                     <td><div class="table-photo-container"><img src="${emp.photo}" class="table-photo" onclick="openProfile('${emp.id}')"></div></td>
                     <td><strong style="color:#0f172a; font-weight:600;">${emp.name}</strong></td>
                     <td>${contractBadge}</td>
                     <td><span style="background:#f1f5f9; padding:6px 10px; border-radius:6px; font-weight:500; font-size:13px;">${emp.role}</span></td>
+                    <td><span class="badge badge-absent-count"><i class="fas fa-calendar-minus"></i> ${absentDaysCount} Days</span></td>
                     <td><span class="badge ${badgeClass}">${currentStatusText}</span></td>
                     <td>${leaveActionColumn}</td>
                     <td>
@@ -646,6 +656,7 @@
             document.getElementById('name').value = emp.name;
             document.getElementById('contractType').value = emp.contractType || 'Contract';
             document.getElementById('salary').value = emp.salary || '';
+            document.getElementById('absentDays').value = emp.absentDays !== undefined ? emp.absentDays : '';
             document.getElementById('role').value = emp.role;
             document.getElementById('offDay').value = emp.offDay;
             document.getElementById('ppExp').value = emp.ppExp || '';
@@ -662,6 +673,7 @@
             document.getElementById('name').value = "";
             document.getElementById('contractType').value = "Contract";
             document.getElementById('salary').value = "";
+            document.getElementById('absentDays').value = "";
             document.getElementById('role').value = "";
             document.getElementById('offDay').value = "NO";
             document.getElementById('ppExp').value = "";
@@ -768,6 +780,7 @@
             const contractType = document.getElementById('contractType').value;
             const role = document.getElementById('role').value;
             const salary = document.getElementById('salary').value;
+            const absentDays = parseFloat(document.getElementById('absentDays').value) || 0;
             const offDay = document.getElementById('offDay').value;
 
             if(!name || !role || !salary) return alert("Validation failed.");
@@ -777,6 +790,7 @@
                 contractType: contractType,
                 role: role, 
                 salary: salary, 
+                absentDays: absentDays,
                 offDay: offDay, 
                 ppExp: document.getElementById('ppExp').value, 
                 wpExp: document.getElementById('wpExp').value, 
@@ -818,6 +832,15 @@
                 }
             });
             const tomorrowOff = allStaff.filter(e => e.offDay === tomorrowName).length;
+            
+            // Dynamic Calculation for Contract / Non-Contract Counters
+            const contractCount = allStaff.filter(e => (e.contractType || 'Contract') === 'Contract').length;
+            const nonContractCount = allStaff.filter(e => e.contractType === 'Non-Contract').length;
+
+            document.getElementById('cntAll').innerText = allStaff.length;
+            document.getElementById('cntContract').innerText = contractCount;
+            document.getElementById('cntNonContract').innerText = nonContractCount;
+
             document.getElementById('totalCount').innerText = allStaff.length;
             document.getElementById('workingCount').innerText = allStaff.length - actualOffTodayCount;
             document.getElementById('offCount').innerText = actualOffTodayCount;
@@ -838,7 +861,7 @@
             const emp = allStaff.find(e => e.id === id);
             document.getElementById('m-photo').src = emp.photo;
             document.getElementById('m-name').innerText = emp.name;
-            document.getElementById('m-details').innerHTML = `📝 Agreement: ${emp.contractType || 'Contract'}<br>📍 Area Sector: ${emp.role}<br>🗓️ Standard Off-Day: ${emp.offDay}<br>💰 Salary Base: $${emp.salary}<br>Passport Locked: ${emp.ppExp || '-'}<br>Work Permit: ${emp.wpExp || '-'}`;
+            document.getElementById('m-details').innerHTML = `📝 Agreement: ${emp.contractType || 'Contract'}<br>📍 Area Sector: ${emp.role}<br>⚠️ Total Absent Days: ${emp.absentDays || 0} Days<br>🗓️ Standard Off-Day: ${emp.offDay}<br>💰 Salary Base: $${emp.salary}<br>Passport Locked: ${emp.ppExp || '-'}<br>Work Permit: ${emp.wpExp || '-'}`;
             document.getElementById('profileModal').style.display = 'flex';
         }
 

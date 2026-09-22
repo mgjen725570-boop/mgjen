@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Passport Cloud Tracker - Enterprise Edition</title>
+  <title>MJ GUID - Passport & System Tracker</title>
   <style>
     :root {
       --bg-dark: #0a0f1d;
@@ -24,6 +24,7 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Padauk", sans-serif;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     body {
@@ -56,7 +57,7 @@
       align-items: flex-start;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    .header-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px; }
+    .header-sub { font-size: 0.72rem; color: var(--gold-primary); font-weight: 700; letter-spacing: 0.5px; }
     .header-title { font-size: 1.15rem; font-weight: 700; color: var(--text-white); letter-spacing: -0.3px; }
     .btn-settings {
       width: 36px; height: 36px; border-radius: 10px;
@@ -187,8 +188,8 @@
     .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
 
     .modal-overlay {
-      position: absolute; inset: 0; background: rgba(3, 7, 18, 0.85);
-      backdrop-filter: blur(8px); display: flex; align-items: center;
+      position: absolute; inset: 0; background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(10px); display: flex; align-items: center;
       justify-content: center; padding: 16px; z-index: 100;
       opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
     }
@@ -204,13 +205,16 @@
     .modal-header h3 { font-size: 0.94rem; color: var(--gold-primary); }
     .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; }
 
+    /* Security PIN Screen */
     #lockScreenOverlay { z-index: 999; background: #030712; flex-direction: column; gap: 16px; text-align: center; }
-    .pin-display { font-size: 1.8rem; letter-spacing: 12px; color: var(--gold-primary); margin: 10px 0; }
-    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 240px; }
+    .pin-display { font-size: 2.2rem; letter-spacing: 14px; color: var(--gold-primary); margin: 12px 0; height: 40px; }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 250px; }
     .pin-key {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px;
-      padding: 12px; font-size: 1.1rem; font-weight: 700; color: white; cursor: pointer;
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 14px; font-size: 1.25rem; font-weight: 700; color: white; cursor: pointer;
+      transition: background 0.1s;
     }
+    .pin-key:active { background: var(--gold-primary); color: #000; }
 
     .menu-btn-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
     .menu-btn {
@@ -220,28 +224,38 @@
       justify-content: space-between; cursor: pointer;
     }
 
-    .form-group { margin-bottom: 10px; }
+    .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 4px; }
     .form-group input, .form-group textarea {
       width: 100%; background: #080d1a; border: 1px solid var(--card-border);
-      border-radius: 8px; padding: 8px 10px; color: var(--text-white); font-size: 0.82rem; outline: none;
+      border-radius: 8px; padding: 10px; color: var(--text-white); font-size: 0.85rem; outline: none;
+      user-select: text;
     }
+    .form-group input:focus { border-color: var(--gold-primary); }
 
     .btn-submit {
       width: 100%; background: linear-gradient(135deg, var(--gold-primary) 0%, #b89128 100%);
-      color: #050811; font-weight: 700; border: none; padding: 10px; border-radius: 8px;
+      color: #050811; font-weight: 700; border: none; padding: 12px; border-radius: 8px;
       margin-top: 8px; cursor: pointer; font-size: 0.85rem;
     }
     .legal-text { font-size: 0.75rem; color: #94a3b8; line-height: 1.55; }
+    .profile-badge-box {
+      background: rgba(212, 175, 55, 0.08);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
 
   <div class="app-shell">
+    <!-- Security Lock Overlay -->
     <div class="modal-overlay" id="lockScreenOverlay">
-      <div style="font-size: 2.5rem;">🔒</div>
-      <h3 style="color: var(--gold-primary); font-size: 1rem;">Passport Cloud Tracker</h3>
-      <p style="font-size: 0.75rem; color: var(--text-muted);">ဝင်ရောက်ရန် Password (PIN) ရိုက်ထည့်ပါ</p>
+      <div style="font-size: 2.8rem;">🔒</div>
+      <h3 style="color: var(--gold-primary); font-size: 1.05rem;">MJ GUID Security Control</h3>
+      <p style="font-size: 0.75rem; color: var(--text-muted);">ဝင်ရောက်ရန် PIN ဂဏန်း (၄) လုံး ရိုက်ထည့်ပါ</p>
       <div class="pin-display" id="pinDots">••••</div>
       <div class="pin-keypad" id="keypad">
         <button class="pin-key" data-val="1">1</button>
@@ -255,13 +269,13 @@
         <button class="pin-key" data-val="9">9</button>
         <button class="pin-key" id="btnPinClear">C</button>
         <button class="pin-key" data-val="0">0</button>
-        <button class="pin-key" id="btnPinUnlock">➔</button>
+        <button class="pin-key" id="btnPinDel">⌫</button>
       </div>
     </div>
 
     <header class="app-header">
       <div>
-        <div class="header-sub">ပြည်ပရောက်မြန်မာများအတွက်</div>
+        <div class="header-sub">MJ GUID ARCHITECTURE</div>
         <div class="header-title">Passport Cloud Tracker</div>
       </div>
       <button class="btn-settings" id="btnOpenSettings">⚙️</button>
@@ -316,6 +330,7 @@
       </div>
     </footer>
 
+    <!-- Settings Menu Modal -->
     <div class="modal-overlay" id="settingsMenuModal">
       <div class="modal-sheet">
         <div class="modal-header">
@@ -328,17 +343,18 @@
             <span>➔</span>
           </div>
           <div class="menu-btn" id="btnNavPassword">
-            <span>🔒 App Password သတ်မှတ်ရန်</span>
+            <span>🔒 App Password သတ်မှတ်ရန် (ဂဏန်း ၄ လုံး)</span>
             <span>➔</span>
           </div>
           <div class="menu-btn" id="btnNavAbout">
-            <span>ℹ️ App ၏ အကြောင်း (About)</span>
+            <span>ℹ️ App ၏ အကြောင်း (Developer Profile)</span>
             <span>➔</span>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Data Input Modal -->
     <div class="modal-overlay" id="dataModal">
       <div class="modal-sheet">
         <div class="modal-header">
@@ -371,6 +387,7 @@
       </div>
     </div>
 
+    <!-- Password Config Modal -->
     <div class="modal-overlay" id="passwordModal">
       <div class="modal-sheet">
         <div class="modal-header">
@@ -379,32 +396,36 @@
         </div>
         <form id="passForm">
           <div class="form-group">
-            <label for="input_app_pass">Password အသစ်ရိုက်ပါ (ဂဏန်း ၄ လုံး)</label>
-            <input type="password" id="input_app_pass" maxlength="4" required placeholder="****">
+            <label for="input_app_pass">Password အသစ်ရိုက်ပါ (ဂဏန်း ၄ လုံးတိတိ)</label>
+            <input type="password" id="input_app_pass" pattern="[0-9]{4}" maxlength="4" inputmode="numeric" required placeholder="****">
           </div>
           <button type="submit" class="btn-submit">Cloud တွင် Password သိမ်းမည်</button>
         </form>
       </div>
     </div>
 
+    <!-- About Developer Modal -->
     <div class="modal-overlay" id="aboutModal">
       <div class="modal-sheet">
         <div class="modal-header">
-          <h3>App ၏ ရည်ရွယ်ချက်နှင့် အကာအကွယ်</h3>
+          <h3>Developer Profile & Architecture</h3>
           <button class="close-btn" data-close="aboutModal">✕</button>
         </div>
         <div class="legal-text">
-          <p><strong>ဆော့ဝဲလ်၏ ရည်ရွယ်ချက်:</strong><br>
+          <div class="profile-badge-box">
+            <h4 style="color: var(--gold-primary); font-size: 0.85rem;">💻 Senior Software Engineer & Technical Consultant</h4>
+            <p style="margin-top: 4px; font-size: 0.74rem;">ခေတ်မီဆန်းသစ်သော Clean Code များဖြင့် ဝက်ဘ်ဆိုက်နှင့် ဆော့ဖ်ဝဲလ်စနစ်များကို စနစ်ကျကျ ရေးသားပေးသူနှင့် အကောင်းဆုံး နည်းပညာဆိုင်ရာ အကြံပေးသူ ဖြစ်ပါသည်။</p>
+          </div>
+          <p><strong>ဆော့ဖ်ဝဲလ်၏ ရည်ရွယ်ချက်:</strong><br>
           ပြည်ပရောက် မြန်မာလုပ်သားများ၏ စာအုပ်၊ ဝပ်ပါမစ်၊ ပန်းရောင်ကတ်နှင့် ရက် ၉၀ တိုင်ကြားရန် ရက်စွဲများကို မေ့လျော့မှုမရှိစေရန် Cloud စနစ်ဖြင့် စနစ်တကျ မှတ်သားပေးသော Software ဖြစ်ပါသည်။</p>
           <br>
-          <p><strong>🔒 Privacy & Data Isolation Guarantee:</strong><br>
+          <p><strong>🔒 Data Isolation Guarantee:</strong><br>
           ဤ App သည် အသုံးပြုသူများ၏ ဖုန်းထဲရှိ အချက်အလက်များ၊ အကောင့်များ၊ Photos, Contacts သို့မဟုတ် Device System Management တစ်ခုကိုမျှ Access ရယူခြင်း/ဆွဲယူခြင်း လုံးဝ(လုံးဝ) မရှိပါကြောင်းနှင့် မည်သည့် အန္တရာယ်မှ မရှိကြောင်း ရာနှုန်းပြည့် အာမခံပါသည်။</p>
-          <br>
-          <p style="color: var(--gold-primary); font-weight: bold;">ဆော့ဝဲလ်ရေးသားသူ - MgJen</p>
         </div>
       </div>
     </div>
 
+    <!-- Telegram Feedback Modal -->
     <div class="modal-overlay" id="feedbackModal">
       <div class="modal-sheet">
         <div class="modal-header">
@@ -438,9 +459,7 @@
       appId: "1:543296449387:web:ac50f866a6298fb4f1fa2e"
     };
 
-    // Strict Target Facebook Page URL Route
     const FACEBOOK_PAGE_URL = "https://www.facebook.com/Foryou7768/";
-
     const ITEMS_CFG = [
       { key: 'passport', title: 'စာအုပ်', subDef: 'Passport Validity' },
       { key: 'workpermit', title: 'ဝပ်ပါမစ်', subDef: 'Work Permit' },
@@ -457,48 +476,32 @@
         this.mmMonths = ["တန်ခူး", "ကဆုန်", "နယုန်", "ဝါဆို", "ဝါခေါင်", "တော်သလင်း", "သီတင်းကျွတ်", "တန်ဆောင်မုန်း", "နတ်တော်", "ပြာသို", "တပို့တွဲ", "တပေါင်း"];
         this.digits = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
       }
-
-      toMyanmarNum(num) {
-        return num.toString().split('').map(d => this.digits[parseInt(d)] || d).join('');
-      }
-
+      toMyanmarNum(num) { return num.toString().split('').map(d => this.digits[parseInt(d)] || d).join(''); }
       getJDN(year, month, day) {
         let a = Math.floor((14 - month) / 12);
         let y = year + 4800 - a;
         let m = month + 12 * a - 3;
         return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
       }
-
       calculate(dateObj) {
         const gy = dateObj.getFullYear();
         const gm = dateObj.getMonth() + 1;
         const gd = dateObj.getDate();
-        
         const jdn = this.getJDN(gy, gm, gd);
         let myYear = gy - 638;
         if (gm < 4 || (gm === 4 && gd < 17)) myYear -= 1;
-
         const dayOfWeek = MYANMAR_DAYS[dateObj.getDay()];
         const SYNODE = 29.5305879;
         const refJDN = 2451549.5;
         let moonPhaseVal = ((jdn - refJDN) % SYNODE);
         if (moonPhaseVal < 0) moonPhaseVal += SYNODE;
-
         const dayOfCycle = Math.floor(moonPhaseVal);
         let moonPhaseStr = "";
-
         if (dayOfCycle === 0) moonPhaseStr = "လကွယ်နေ့";
         else if (dayOfCycle === 14 || dayOfCycle === 15) moonPhaseStr = "လပြည့်နေ့";
-        else if (dayOfCycle < 15) moonPhaseStr = `လဆန်း ${this.toMyanmarNum(dayOfCycle)} ရက်`;
-        else moonPhaseStr = `လဆုတ် ${this.toMyanmarNum(dayOfCycle - 14)} ရက်`;
-
+        else if (dayOfCycle < 15) moonPhaseStr = `လဆန်း ${this.toMyanmarNum(dayOfCycle)} ရက်`;         else moonPhaseStr = `လဆုတ် ${this.toMyanmarNum(dayOfCycle - 14)} ရက်`;
         const monthName = this.mmMonths[(gm + 8) % 12];
-
-        return {
-          myYearStr: `မြန်မာသက္ကရာဇ် ${this.toMyanmarNum(myYear)} ခု`,
-          fullStr: `${monthName} ${moonPhaseStr} (${dayOfWeek}နေ့)`,
-          dayOfWeek
-        };
+        return { myYearStr: `မြန်မာသက္ကရာဇ် ${this.toMyanmarNum(myYear)} ခု`, fullStr: `${monthName} ${moonPhaseStr} (${dayOfWeek}နေ့)` };
       }
     }
 
@@ -535,18 +538,24 @@
 
     function checkLockStatus() {
       const lockOverlay = document.getElementById('lockScreenOverlay');
-      if (appData.appPin && appData.appPin.length > 0) {
+      if (appData.appPin && appData.appPin.length === 4) {
         lockOverlay.classList.add('active');
       } else {
         lockOverlay.classList.remove('active');
       }
     }
 
+    /* Keypad 4-Digit Auto Unlock Mechanics */
     document.querySelectorAll('.pin-key[data-val]').forEach(btn => {
       btn.onclick = () => {
         if (enteredPin.length < 4) {
           enteredPin += btn.getAttribute('data-val');
           updatePinDisplay();
+          
+          // Auto Verify on 4th Digit
+          if (enteredPin.length === 4) {
+            setTimeout(verifyPin, 100);
+          }
         }
       };
     });
@@ -556,43 +565,41 @@
       updatePinDisplay();
     };
 
-    document.getElementById('btnPinUnlock').onclick = () => {
-      if (enteredPin === appData.appPin) {
-        document.getElementById('lockScreenOverlay').classList.remove('active');
-        enteredPin = "";
-      } else {
-        alert('Password မှားယွင်းနေပါသည်။ ပြန်လည်ရိုက်ထည့်ပါ။');
-        enteredPin = "";
+    document.getElementById('btnPinDel').onclick = () => {
+      if (enteredPin.length > 0) {
+        enteredPin = enteredPin.slice(0, -1);
         updatePinDisplay();
       }
     };
 
+    function verifyPin() {
+      if (enteredPin === appData.appPin) {
+        document.getElementById('lockScreenOverlay').classList.remove('active');
+        enteredPin = "";
+        updatePinDisplay();
+      } else {
+        alert('Password (PIN) မှားယွင်းနေပါသည်။ ပြန်လည်ရိုက်ထည့်ပါ။');
+        enteredPin = "";
+        updatePinDisplay();
+      }
+    }
+
     function updatePinDisplay() {
       document.getElementById('pinDots').textContent = '•'.repeat(enteredPin.length) || '••••';
     }
+
+    /* Limit Password Modal Input strictly to 4 Digits */
+    const passInput = document.getElementById('input_app_pass');
+    passInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+    });
 
     function formatDateWithDay(isoString) {
       if (!isoString) return null;
       const parts = isoString.split('-');
       if (parts.length !== 3) return isoString;
       const dObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-      return `${parts[0]}-${parts[1]}-${parts[2]} (${MYANMAR_DAYS[dObj.getDay()]}၊ ${parts[2]}/${parts[1]}/${parts[0]})`;
-    }
-
-    function calculateDiff(isoString) {
-      if (!isoString) return { text: 'ရက်စွဲ မထည့်ရသေးပါ', badgeClass: 'badge-empty', daysLeft: Infinity };
-      const now = new Date(); now.setHours(0,0,0,0);
-      const target = new Date(isoString); target.setHours(0,0,0,0);
-      const daysLeft = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (daysLeft < 0) return { text: 'သက်တမ်းကုန်သွားပါပြီ', badgeClass: 'badge-danger', daysLeft };
-      if (daysLeft === 0) return { text: 'ယနေ့ ကုန်ဆုံးမည်', badgeClass: 'badge-danger', daysLeft: 0 };
-
-      let badgeClass = 'badge-ok';
-      if (daysLeft <= 30) badgeClass = 'badge-danger';
-      else if (daysLeft <= 90) badgeClass = 'badge-warn';
-
-      return { text: `${daysLeft} ရက် လိုသေး`, badgeClass, daysLeft };
+      return `${parts[0]}-${parts[1]}-${parts[2]} (${MYANMAR_DAYS[dObj.getDay()]}၊ ${parts[2]}/${parts[1]}/${parts[0]})`;     }      function calculateDiff(isoString) {       if (!isoString) return { text: 'ရက်စွဲ မထည့်ရသေးပါ', badgeClass: 'badge-empty', daysLeft: Infinity };       const now = new Date(); now.setHours(0,0,0,0);       const target = new Date(isoString); target.setHours(0,0,0,0);       const daysLeft = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));        if (daysLeft < 0) return { text: 'သက်တမ်းကုန်သွားပါပြီ', badgeClass: 'badge-danger', daysLeft };       if (daysLeft === 0) return { text: 'ယနေ့ ကုန်ဆုံးမည်', badgeClass: 'badge-danger', daysLeft: 0 };        let badgeClass = 'badge-ok';       if (daysLeft <= 30) badgeClass = 'badge-danger';       else if (daysLeft <= 90) badgeClass = 'badge-warn';        return { text: `${daysLeft} ရက် လိုသေး`, badgeClass, daysLeft };
     }
 
     function renderUI() {
@@ -678,6 +685,7 @@
 
     document.getElementById('btnNavPassword').onclick = () => {
       closeModal('settingsMenuModal');
+      document.getElementById('input_app_pass').value = appData.appPin || '';
       openModal('passwordModal');
     };
 
@@ -706,6 +714,8 @@
     document.getElementById('passForm').onsubmit = async (e) => {
       e.preventDefault();
       const passVal = document.getElementById('input_app_pass').value.trim();
+      if (passVal.length !== 4) return alert('PIN ဂဏန်း ၄ လုံး တိတိ ရိုက်ထည့်ပါ');
+      
       appData.appPin = passVal;
       localStorage.setItem('mki_secure_cache', JSON.stringify(appData));
 
@@ -744,7 +754,6 @@
       }
     };
 
-    // Photo Shop Routing Handler
     document.getElementById('btnPhotoShop').onclick = () => {
       window.open(FACEBOOK_PAGE_URL, '_blank', 'noopener,noreferrer');
     };

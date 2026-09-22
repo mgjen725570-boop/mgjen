@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Passport Cloud Tracker - Enterprise Edition</title>
+  <style>
+    :root {
+      --bg-dark: #0a0f1d;
+      --card-bg: #131c2e;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --gold-primary: #d4af37;
+      --text-white: #ffffff;
+      --text-muted: #8e9bb0;
+      --icon-bg: #1d273a;
+      --danger: #ef4444;
+      --warning: #fbbf24;
+      --success: #34d399;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Padauk", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #030712;
+      color: var(--text-white);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 412px;
+      height: 100vh;
+      max-height: 892px;
+      background-color: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .app-header {
+      padding: 16px 20px 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .header-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px; }
+    .header-title { font-size: 1.15rem; font-weight: 700; color: var(--text-white); letter-spacing: -0.3px; }
+    .btn-settings {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--icon-bg); border: 1px solid var(--card-border);
+      color: #a0aec0; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem;
+    }
+
+    .app-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .hero-banner {
+      background: #192233;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+    .hero-banner.alert-warning {
+      border-color: rgba(245, 158, 11, 0.8);
+      background: linear-gradient(135deg, #1f222e 0%, #2b2014 100%);
+    }
+    .hero-banner.alert-danger {
+      border-color: rgba(239, 68, 68, 0.9);
+      background: linear-gradient(135deg, #1f222e 0%, #3a191c 100%);
+      animation: emergencyShake 0.6s infinite ease-in-out;
+    }
+
+    @keyframes emergencyShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    .hero-icon-box {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(212, 175, 55, 0.15); display: flex;
+      align-items: center; justify-content: center; color: var(--gold-primary);
+      flex-shrink: 0; font-size: 1.1rem;
+    }
+    .hero-title-text { font-size: 0.68rem; color: var(--gold-primary); font-weight: 600; }
+    .hero-message-text { font-size: 0.88rem; font-weight: 700; color: var(--text-white); margin-top: 2px; }
+
+    .sub-strip-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      color: var(--gold-primary);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .doc-list { display: flex; flex-direction: column; gap: 10px; }
+    .doc-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .doc-card::before {
+      content: ''; position: absolute; left: 0; top: 20%; height: 60%;
+      width: 3px; background: var(--gold-primary); border-radius: 0 2px 2px 0;
+    }
+    .card-left { display: flex; align-items: center; gap: 12px; }
+    .doc-icon {
+      width: 34px; height: 34px; border-radius: 8px; background: var(--icon-bg);
+      display: flex; align-items: center; justify-content: center; color: #94a3b8;
+    }
+    .doc-info .title { font-size: 0.88rem; font-weight: 700; color: var(--text-white); }
+    
+    .doc-info .date-str-green { font-size: 0.73rem; color: var(--success); font-weight: 600; margin-top: 2px; }
+    .doc-info .date-str-yellow { font-size: 0.73rem; color: var(--warning); font-weight: 600; margin-top: 2px; }
+    .doc-info .date-str-muted { font-size: 0.73rem; color: var(--text-muted); margin-top: 2px; }
+
+    .badge { font-size: 0.72rem; font-weight: 600; padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
+    .badge-empty { background: #1e293b; color: #94a3b8; }
+    .badge-ok { background: rgba(16, 185, 129, 0.12); color: #34d399; }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .middle-insight-card {
+      background: linear-gradient(135deg, #111a2e 0%, #0d1526 100%);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .insight-top { display: flex; justify-content: space-between; align-items: center; }
+    .insight-label {
+      font-size: 0.72rem; font-weight: 700; color: var(--gold-primary);
+      display: flex; align-items: center; gap: 6px; letter-spacing: 0.3px;
+    }
+    .insight-val-badge {
+      font-size: 0.72rem; background: rgba(212, 175, 55, 0.15);
+      color: var(--gold-primary); padding: 3px 10px; border-radius: 6px; font-weight: 700;
+    }
+    .insight-desc { font-size: 0.9rem; font-weight: 700; color: var(--text-white); line-height: 1.4; margin-top: 2px; }
+
+    .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: auto; }
+    .action-card {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 12px 6px; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 6px; cursor: pointer; color: var(--text-white);
+      font-size: 0.74rem; font-weight: 600;
+      transition: transform 0.1s ease, border-color 0.2s ease;
+    }
+    .action-card:active { transform: scale(0.96); border-color: var(--gold-primary); }
+
+    .app-footer { padding: 8px 16px 14px 16px; text-align: center; }
+    .status-text { font-size: 0.7rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+    .modal-overlay {
+      position: absolute; inset: 0; background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(8px); display: flex; align-items: center;
+      justify-content: center; padding: 16px; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-sheet {
+      width: 100%; background: #111827; border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 16px; padding: 18px; max-height: 85vh; overflow-y: auto;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;
+    }
+    .modal-header h3 { font-size: 0.94rem; color: var(--gold-primary); }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; }
+
+    #lockScreenOverlay { z-index: 999; background: #030712; flex-direction: column; gap: 16px; text-align: center; }
+    .pin-display { font-size: 1.8rem; letter-spacing: 12px; color: var(--gold-primary); margin: 10px 0; }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 240px; }
+    .pin-key {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px;
+      padding: 12px; font-size: 1.1rem; font-weight: 700; color: white; cursor: pointer;
+    }
+
+    .menu-btn-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .menu-btn {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 12px 14px; color: var(--text-white);
+      font-size: 0.86rem; font-weight: 600; display: flex; align-items: center;
+      justify-content: space-between; cursor: pointer;
+    }
+
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 4px; }
+    .form-group input, .form-group textarea {
+      width: 100%; background: #080d1a; border: 1px solid var(--card-border);
+      border-radius: 8px; padding: 8px 10px; color: var(--text-white); font-size: 0.82rem; outline: none;
+    }
+
+    .btn-submit {
+      width: 100%; background: linear-gradient(135deg, var(--gold-primary) 0%, #b89128 100%);
+      color: #050811; font-weight: 700; border: none; padding: 10px; border-radius: 8px;
+      margin-top: 8px; cursor: pointer; font-size: 0.85rem;
+    }
+    .legal-text { font-size: 0.75rem; color: #94a3b8; line-height: 1.55; }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+    <div class="modal-overlay" id="lockScreenOverlay">
+      <div style="font-size: 2.5rem;">🔒</div>
+      <h3 style="color: var(--gold-primary); font-size: 1rem;">Passport Cloud Tracker</h3>
+      <p style="font-size: 0.75rem; color: var(--text-muted);">ဝင်ရောက်ရန် Password (PIN) ရိုက်ထည့်ပါ</p>
+      <div class="pin-display" id="pinDots">••••</div>
+      <div class="pin-keypad" id="keypad">
+        <button class="pin-key" data-val="1">1</button>
+        <button class="pin-key" data-val="2">2</button>
+        <button class="pin-key" data-val="3">3</button>
+        <button class="pin-key" data-val="4">4</button>
+        <button class="pin-key" data-val="5">5</button>
+        <button class="pin-key" data-val="6">6</button>
+        <button class="pin-key" data-val="7">7</button>
+        <button class="pin-key" data-val="8">8</button>
+        <button class="pin-key" data-val="9">9</button>
+        <button class="pin-key" id="btnPinClear">C</button>
+        <button class="pin-key" data-val="0">0</button>
+        <button class="pin-key" id="btnPinUnlock">➔</button>
+      </div>
+    </div>
+
+    <header class="app-header">
+      <div>
+        <div class="header-sub">ပြည်ပရောက်မြန်မာများအတွက်</div>
+        <div class="header-title">Passport Cloud Tracker</div>
+      </div>
+      <button class="btn-settings" id="btnOpenSettings">⚙️</button>
+    </header>
+
+    <div class="app-body">
+      <section class="hero-banner" id="heroWidget">
+        <div class="hero-icon-box">🛡️</div>
+        <div>
+          <div class="hero-title-text" id="heroTitle">FIREBASE CLOUD STATUS</div>
+          <div class="hero-message-text" id="heroMessage">အချက်အလက်များ ဖြည့်သွင်းရန် Settings ကို နှိပ်ပါ။</div>
+        </div>
+      </section>
+
+      <div class="sub-strip-box">
+        ⚠️ သက်တမ်းမကုန်မီ ကြိုတင်ပြင်ဆင်ပါ
+      </div>
+
+      <section class="doc-list" id="docListContainer"></section>
+
+      <section class="middle-insight-card">
+        <div class="insight-top">
+          <div class="insight-label">
+            <span>🇲🇲</span>
+            <span>MYANMAR CALENDAR ENGINE</span>
+          </div>
+          <div class="insight-val-badge" id="mCalYear">မြန်မာသက္ကရာဇ်</div>
+        </div>
+        <div class="insight-desc" id="mCalFullString">တွက်ချက်နေပါသည်...</div>
+      </section>
+
+      <section class="action-grid">
+        <div class="action-card" id="btnPhotoShop">
+          <span style="font-size: 1.15rem;">📸</span>
+          <div>ဓာတ်ပုံဆိုင်</div>
+        </div>
+        <div class="action-card" id="btnCalendarSync">
+          <span style="font-size: 1.15rem;">📅</span>
+          <div>Calendar မှတ်</div>
+        </div>
+        <div class="action-card" id="btnOpenFeedback">
+          <span style="font-size: 1.15rem;">✉️</span>
+          <div>အကြံပြုစာပို့</div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="app-footer">
+      <div class="status-text">
+        <span class="dot"></span>
+        <span id="syncStatus">Offline Mode (Local Cache)</span>
+      </div>
+    </footer>
+
+    <div class="modal-overlay" id="settingsMenuModal">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3>Settings & Controls</h3>
+          <button class="close-btn" data-close="settingsMenuModal">✕</button>
+        </div>
+        <div class="menu-btn-list">
+          <div class="menu-btn" id="btnNavDataForm">
+            <span>📝 အချက်အလက်ဖြည့်ရန်</span>
+            <span>➔</span>
+          </div>
+          <div class="menu-btn" id="btnNavPassword">
+            <span>🔒 App Password သတ်မှတ်ရန်</span>
+            <span>➔</span>
+          </div>
+          <div class="menu-btn" id="btnNavAbout">
+            <span>ℹ️ App ၏ အကြောင်း (About)</span>
+            <span>➔</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="dataModal">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3>အချက်အလက်များ ဖြည့်သွင်းရန်</h3>
+          <button class="close-btn" data-close="dataModal">✕</button>
+        </div>
+        <form id="docDataForm">
+          <div class="form-group">
+            <label for="input_passport_date">စာအုပ် (Passport) ကုန်ဆုံးရက်</label>
+            <input type="date" id="input_passport_date">
+          </div>
+          <div class="form-group">
+            <label for="input_passport_no">စာအုပ်အမှတ် (Passport No.)</label>
+            <input type="text" id="input_passport_no" placeholder="MD123456">
+          </div>
+          <div class="form-group">
+            <label for="input_workpermit_date">ဝပ်ပါမစ် (Work Permit) ကုန်ဆုံးရက်</label>
+            <input type="date" id="input_workpermit_date">
+          </div>
+          <div class="form-group">
+            <label for="input_pinkcard_date">ပန်းရောင်ကတ် ကုန်ဆုံးရက်</label>
+            <input type="date" id="input_pinkcard_date">
+          </div>
+          <div class="form-group">
+            <label for="input_report90_date">ရက် ၉၀ တိုင်ကြားရန်ရက်</label>
+            <input type="date" id="input_report90_date">
+          </div>
+          <button type="submit" class="btn-submit">Firebase Cloud သို့ သိမ်းမည်</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="passwordModal">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3>App Password သတ်မှတ်ရန်</h3>
+          <button class="close-btn" data-close="passwordModal">✕</button>
+        </div>
+        <form id="passForm">
+          <div class="form-group">
+            <label for="input_app_pass">Password အသစ်ရိုက်ပါ (ဂဏန်း ၄ လုံး)</label>
+            <input type="password" id="input_app_pass" maxlength="4" required placeholder="****">
+          </div>
+          <button type="submit" class="btn-submit">Cloud တွင် Password သိမ်းမည်</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="aboutModal">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3>App ၏ ရည်ရွယ်ချက်နှင့် အကာအကွယ်</h3>
+          <button class="close-btn" data-close="aboutModal">✕</button>
+        </div>
+        <div class="legal-text">
+          <p><strong>ဆော့ဝဲလ်၏ ရည်ရွယ်ချက်:</strong><br>
+          ပြည်ပရောက် မြန်မာလုပ်သားများ၏ စာအုပ်၊ ဝပ်ပါမစ်၊ ပန်းရောင်ကတ်နှင့် ရက် ၉၀ တိုင်ကြားရန် ရက်စွဲများကို မေ့လျော့မှုမရှိစေရန် Cloud စနစ်ဖြင့် စနစ်တကျ မှတ်သားပေးသော Software ဖြစ်ပါသည်။</p>
+          <br>
+          <p><strong>🔒 Privacy & Data Isolation Guarantee:</strong><br>
+          ဤ App သည် အသုံးပြုသူများ၏ ဖုန်းထဲရှိ အချက်အလက်များ၊ အကောင့်များ၊ Photos, Contacts သို့မဟုတ် Device System Management တစ်ခုကိုမျှ Access ရယူခြင်း/ဆွဲယူခြင်း လုံးဝ(လုံးဝ) မရှိပါကြောင်းနှင့် မည်သည့် အန္တရာယ်မှ မရှိကြောင်း ရာနှုန်းပြည့် အာမခံပါသည်။</p>
+          <br>
+          <p style="color: var(--gold-primary); font-weight: bold;">ဆော့ဝဲလ်ရေးသားသူ - MgJen</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="feedbackModal">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h3>Telegram သို့ အကြံပြုစာပို့ရန်</h3>
+          <button class="close-btn" data-close="feedbackModal">✕</button>
+        </div>
+        <form id="telegramForm">
+          <div class="form-group">
+            <label for="txtMessage">အကြံပြုလိုသည်များကို ရေးသားပါ</label>
+            <textarea id="txtMessage" rows="4" required placeholder="ဒီနေရာတွင် ရေးပါ..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="btnSendTelegram">ပေးပို့မည်</button>
+          <p id="tgStatus" style="font-size: 0.75rem; margin-top: 6px; text-align: center;"></p>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDyjFwJDMSviMLSdDZF4K12Sji_yHkpXDE",
+      authDomain: "mgjem-392c7.firebaseapp.com",
+      projectId: "mgjem-392c7",
+      storageBucket: "mgjem-392c7.firebasestorage.app",
+      messagingSenderId: "543296449387",
+      appId: "1:543296449387:web:ac50f866a6298fb4f1fa2e"
+    };
+
+    // Strict Target Facebook Page URL Route
+    const FACEBOOK_PAGE_URL = "https://www.facebook.com/Foryou7768/";
+
+    const ITEMS_CFG = [
+      { key: 'passport', title: 'စာအုပ်', subDef: 'Passport Validity' },
+      { key: 'workpermit', title: 'ဝပ်ပါမစ်', subDef: 'Work Permit' },
+      { key: 'pinkcard', title: 'ပန်းရောင်ကတ်', subDef: 'Pink Card / ID' },
+      { key: 'report90', title: 'ရက် ၉၀', subDef: '90-Day Reporting' }
+    ];
+
+    const MYANMAR_DAYS = ['တနင်္ဂနွေ', 'တနင်္လာ', 'အင်္ဂါ', 'ဗုဒ္ဓဟူး', 'ကြာသပတေး', 'သောကြာ', 'စနေ'];
+    const TG_BOT_TOKEN = '8501066578:AAHC_hGPlUPp3DTzSABn9epcjuYmVDNMcxc';
+    const TG_CHAT_ID = '7454477290';
+
+    class DrYanNaingLwinCalendar {
+      constructor() {
+        this.mmMonths = ["တန်ခူး", "ကဆုန်", "နယုန်", "ဝါဆို", "ဝါခေါင်", "တော်သလင်း", "သီတင်းကျွတ်", "တန်ဆောင်မုန်း", "နတ်တော်", "ပြာသို", "တပို့တွဲ", "တပေါင်း"];
+        this.digits = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+      }
+
+      toMyanmarNum(num) {
+        return num.toString().split('').map(d => this.digits[parseInt(d)] || d).join('');
+      }
+
+      getJDN(year, month, day) {
+        let a = Math.floor((14 - month) / 12);
+        let y = year + 4800 - a;
+        let m = month + 12 * a - 3;
+        return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+      }
+
+      calculate(dateObj) {
+        const gy = dateObj.getFullYear();
+        const gm = dateObj.getMonth() + 1;
+        const gd = dateObj.getDate();
+        
+        const jdn = this.getJDN(gy, gm, gd);
+        let myYear = gy - 638;
+        if (gm < 4 || (gm === 4 && gd < 17)) myYear -= 1;
+
+        const dayOfWeek = MYANMAR_DAYS[dateObj.getDay()];
+        const SYNODE = 29.5305879;
+        const refJDN = 2451549.5;
+        let moonPhaseVal = ((jdn - refJDN) % SYNODE);
+        if (moonPhaseVal < 0) moonPhaseVal += SYNODE;
+
+        const dayOfCycle = Math.floor(moonPhaseVal);
+        let moonPhaseStr = "";
+
+        if (dayOfCycle === 0) moonPhaseStr = "လကွယ်နေ့";
+        else if (dayOfCycle === 14 || dayOfCycle === 15) moonPhaseStr = "လပြည့်နေ့";
+        else if (dayOfCycle < 15) moonPhaseStr = `လဆန်း ${this.toMyanmarNum(dayOfCycle)} ရက်`;
+        else moonPhaseStr = `လဆုတ် ${this.toMyanmarNum(dayOfCycle - 14)} ရက်`;
+
+        const monthName = this.mmMonths[(gm + 8) % 12];
+
+        return {
+          myYearStr: `မြန်မာသက္ကရာဇ် ${this.toMyanmarNum(myYear)} ခု`,
+          fullStr: `${monthName} ${moonPhaseStr} (${dayOfWeek}နေ့)`,
+          dayOfWeek
+        };
+      }
+    }
+
+    const mEngine = new DrYanNaingLwinCalendar();
+    let appData = JSON.parse(localStorage.getItem('mki_secure_cache') || '{}');
+    let currentUser = null;
+    let enteredPin = "";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    checkLockStatus();
+    renderUI();
+
+    signInAnonymously(auth).catch(() => {
+      document.getElementById('syncStatus').textContent = 'Offline Mode (Local Cache)';
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('syncStatus').textContent = 'Cloud Synchronized';
+        onSnapshot(doc(db, "money_records", user.uid), (snapshot) => {
+          if (snapshot.exists()) {
+            appData = snapshot.data();
+            localStorage.setItem('mki_secure_cache', JSON.stringify(appData));
+            checkLockStatus();
+            renderUI();
+          }
+        });
+      }
+    });
+
+    function checkLockStatus() {
+      const lockOverlay = document.getElementById('lockScreenOverlay');
+      if (appData.appPin && appData.appPin.length > 0) {
+        lockOverlay.classList.add('active');
+      } else {
+        lockOverlay.classList.remove('active');
+      }
+    }
+
+    document.querySelectorAll('.pin-key[data-val]').forEach(btn => {
+      btn.onclick = () => {
+        if (enteredPin.length < 4) {
+          enteredPin += btn.getAttribute('data-val');
+          updatePinDisplay();
+        }
+      };
+    });
+
+    document.getElementById('btnPinClear').onclick = () => {
+      enteredPin = "";
+      updatePinDisplay();
+    };
+
+    document.getElementById('btnPinUnlock').onclick = () => {
+      if (enteredPin === appData.appPin) {
+        document.getElementById('lockScreenOverlay').classList.remove('active');
+        enteredPin = "";
+      } else {
+        alert('Password မှားယွင်းနေပါသည်။ ပြန်လည်ရိုက်ထည့်ပါ။');
+        enteredPin = "";
+        updatePinDisplay();
+      }
+    };
+
+    function updatePinDisplay() {
+      document.getElementById('pinDots').textContent = '•'.repeat(enteredPin.length) || '••••';
+    }
+
+    function formatDateWithDay(isoString) {
+      if (!isoString) return null;
+      const parts = isoString.split('-');
+      if (parts.length !== 3) return isoString;
+      const dObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      return `${parts[0]}-${parts[1]}-${parts[2]} (${MYANMAR_DAYS[dObj.getDay()]}၊ ${parts[2]}/${parts[1]}/${parts[0]})`;
+    }
+
+    function calculateDiff(isoString) {
+      if (!isoString) return { text: 'ရက်စွဲ မထည့်ရသေးပါ', badgeClass: 'badge-empty', daysLeft: Infinity };
+      const now = new Date(); now.setHours(0,0,0,0);
+      const target = new Date(isoString); target.setHours(0,0,0,0);
+      const daysLeft = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysLeft < 0) return { text: 'သက်တမ်းကုန်သွားပါပြီ', badgeClass: 'badge-danger', daysLeft };
+      if (daysLeft === 0) return { text: 'ယနေ့ ကုန်ဆုံးမည်', badgeClass: 'badge-danger', daysLeft: 0 };
+
+      let badgeClass = 'badge-ok';
+      if (daysLeft <= 30) badgeClass = 'badge-danger';
+      else if (daysLeft <= 90) badgeClass = 'badge-warn';
+
+      return { text: `${daysLeft} ရက် လိုသေး`, badgeClass, daysLeft };
+    }
+
+    function renderUI() {
+      const container = document.getElementById('docListContainer');
+      container.innerHTML = '';
+      let mostUrgentDays = Infinity;
+      let urgentTitle = '';
+
+      ITEMS_CFG.forEach(item => {
+        const rawDate = appData[item.key] || '';
+        const dateFormatted = formatDateWithDay(rawDate) || item.subDef;
+        const calc = calculateDiff(rawDate);
+
+        if (rawDate && calc.daysLeft < mostUrgentDays) {
+          mostUrgentDays = calc.daysLeft;
+          urgentTitle = item.title;
+        }
+
+        let dateColorClass = 'date-str-muted';
+        if (rawDate) {
+          dateColorClass = calc.daysLeft <= 90 ? 'date-str-yellow' : 'date-str-green';
+        }
+
+        const cardElem = document.createElement('div');
+        cardElem.className = 'doc-card';
+        cardElem.innerHTML = `
+          <div class="card-left">
+            <div class="doc-icon">📄</div>
+            <div class="doc-info">
+              <div class="title">${item.title}</div>
+              <div class="${dateColorClass}">${dateFormatted}</div>
+            </div>
+          </div>
+          <div class="badge ${calc.badgeClass}">${calc.text}</div>
+        `;
+        container.appendChild(cardElem);
+      });
+
+      const heroWidget = document.getElementById('heroWidget');
+      const heroTitle = document.getElementById('heroTitle');
+      const heroMessage = document.getElementById('heroMessage');
+
+      heroWidget.classList.remove('alert-warning', 'alert-danger');
+
+      if (mostUrgentDays === Infinity) {
+        heroTitle.textContent = 'FIREBASE CLOUD STATUS';
+        heroMessage.textContent = 'အချက်အလက်များ ဖြည့်သွင်းရန် Settings ကို နှိပ်ပါ။';
+      } else if (mostUrgentDays < 0) {
+        heroWidget.classList.add('alert-danger');
+        heroTitle.textContent = 'အရေးပေါ် သတိပေးချက်';
+        heroMessage.textContent = `${urgentTitle} သက်တမ်း ကုန်ဆုံးသွားပါပြီ။`;
+      } else if (mostUrgentDays <= 90) {
+        heroWidget.classList.add(mostUrgentDays <= 30 ? 'alert-danger' : 'alert-warning');
+        heroTitle.textContent = 'သတိပေးချက် (အရေးပေါ်)';
+        heroMessage.textContent = `${urgentTitle} ကုန်ဆုံးရန် ${mostUrgentDays} ရက်သာ လိုပါတော့သည်။`;
+      } else {
+        heroTitle.textContent = 'အခြေအနေ ကောင်းမွန်ပါသည်';
+        heroMessage.textContent = 'စာရွက်စာတမ်း သက်တမ်းများ လုံလောက်စွာ ရှိပါသေးသည်။';
+      }
+
+      const calData = mEngine.calculate(new Date());
+      document.getElementById('mCalYear').textContent = calData.myYearStr;
+      document.getElementById('mCalFullString').textContent = calData.fullStr;
+    }
+
+    const openModal = (id) => document.getElementById(id).classList.add('active');
+    const closeModal = (id) => document.getElementById(id).classList.remove('active');
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.onclick = () => closeModal(btn.getAttribute('data-close'));
+    });
+
+    document.getElementById('btnOpenSettings').onclick = () => openModal('settingsMenuModal');
+
+    document.getElementById('btnNavDataForm').onclick = () => {
+      closeModal('settingsMenuModal');
+      ITEMS_CFG.forEach(item => {
+        document.getElementById(`input_${item.key}_date`).value = appData[item.key] || '';
+      });
+      document.getElementById('input_passport_no').value = appData.passportNo || '';
+      openModal('dataModal');
+    };
+
+    document.getElementById('btnNavPassword').onclick = () => {
+      closeModal('settingsMenuModal');
+      openModal('passwordModal');
+    };
+
+    document.getElementById('btnNavAbout').onclick = () => {
+      closeModal('settingsMenuModal');
+      openModal('aboutModal');
+    };
+
+    document.getElementById('btnOpenFeedback').onclick = () => openModal('feedbackModal');
+
+    document.getElementById('docDataForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const newData = { passportNo: document.getElementById('input_passport_no').value.trim() };
+      ITEMS_CFG.forEach(item => { newData[item.key] = document.getElementById(`input_${item.key}_date`).value; });
+
+      appData = { ...appData, ...newData };
+      localStorage.setItem('mki_secure_cache', JSON.stringify(appData));
+      renderUI();
+
+      if (currentUser) {
+        await setDoc(doc(db, "money_records", currentUser.uid), newData, { merge: true });
+      }
+      closeModal('dataModal');
+    };
+
+    document.getElementById('passForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const passVal = document.getElementById('input_app_pass').value.trim();
+      appData.appPin = passVal;
+      localStorage.setItem('mki_secure_cache', JSON.stringify(appData));
+
+      if (currentUser) {
+        await setDoc(doc(db, "money_records", currentUser.uid), { appPin: passVal }, { merge: true });
+      }
+      alert('Password (PIN) ကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ');
+      closeModal('passwordModal');
+    };
+
+    document.getElementById('telegramForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('txtMessage').value.trim();
+      const status = document.getElementById('tgStatus');
+      status.style.color = '#cbd5e1'; status.textContent = 'ပေးပို့နေပါသည်...';
+
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TG_CHAT_ID,
+            text: `💬 *အကြံပြုစာသစ်*\n\n${msg}\n\n👤 User: \`${currentUser ? currentUser.uid : 'Local'}\``,
+            parse_mode: 'Markdown'
+          })
+        });
+        if (res.ok) {
+          status.style.color = '#34d399';
+          status.textContent = 'အကြံပြုစာ အောင်မြင်စွာ ပို့ပြီးပါပြီ!';
+          document.getElementById('telegramForm').reset();
+          setTimeout(() => closeModal('feedbackModal'), 1200);
+        } else throw new Error();
+      } catch {
+        status.style.color = '#f87171';
+        status.textContent = 'ပေးပို့ခြင်း မအောင်မြင်ပါ။';
+      }
+    };
+
+    // Photo Shop Routing Handler
+    document.getElementById('btnPhotoShop').onclick = () => {
+      window.open(FACEBOOK_PAGE_URL, '_blank', 'noopener,noreferrer');
+    };
+
+    document.getElementById('btnCalendarSync').onclick = () => {
+      if (!appData.report90) return alert('ရက် ၉၀ စာရင်း မရှိသေးပါ');
+      const d = appData.report90.replace(/-/g, '');
+      window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=ရက်၉၀+တိုင်ကြားရန်&dates=${d}/${d}`, '_blank');
+    };
+  </script>
+</body>
+</html>

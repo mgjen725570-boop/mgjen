@@ -79,46 +79,33 @@
             </div>
         </main>
 
-        <!-- Order Modal -->
-        <div id="itemDetailModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl relative">
+        <!-- Image Zoom & Detail Modal (Updated View) -->
+        <div id="itemDetailModal" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-4 space-y-3 shadow-2xl relative flex flex-col items-center text-center">
                 <button onclick="closeItemModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-base"></i></button>
                 
-                <div class="w-full h-32 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden" id="modalItemImgContainer">
-                    <!-- Modal Image -->
-                </div>
+                <span id="modalItemCategory" class="text-[9px] bg-blue-500/20 text-blue-400 px-2.5 py-0.5 rounded-full font-semibold self-start">Category</span>
 
-                <div>
-                    <span id="modalItemCategory" class="text-[9px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded font-semibold">Category</span>
-                    <h3 id="modalItemName" class="text-sm font-bold text-white mt-1">ပစ္စည်းအမည်</h3>
-                    <p id="modalItemPrice" class="text-sm font-bold text-emerald-400 mt-0.5">0 Ks</p>
-                </div>
-
-                <div class="border-t border-slate-800 pt-2 space-y-2">
-                    <div>
-                        <label class="text-[10px] text-slate-400 block mb-0.5">ဝယ်ယူသူ အမည်</label>
-                        <input type="text" id="orderCustName" placeholder="ဥပမာ- ကိုအောင်" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                <!-- Zoomable Image Preview Container -->
+                <div class="w-full h-64 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden relative group">
+                    <div id="modalItemImgContainer" class="w-full h-full flex items-center justify-center transition-transform duration-300">
+                        <!-- Image goes here -->
                     </div>
-                    <div>
-                        <label class="text-[10px] text-slate-400 block mb-0.5">ဖုန်းနံပါတ် (ဥပမာ - 09XXXXXXXXX)</label>
-                        <input type="text" id="orderCustPhone" placeholder="09XXXXXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-slate-400 block mb-0.5">နေရပ်လိပ်စာ (အသေးစိတ်ဖြည့်ပါ)</label>
-                        <textarea id="orderCustAddress" rows="2" placeholder="အိမ်နံပါတ်၊ လမ်း၊ မြို့နယ်..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-slate-400 block mb-0.5">အရေအတွက်</label>
-                        <input type="number" id="orderQty" value="1" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
-                    </div>
-
-                    <!-- Validation Error Box -->
-                    <div id="errorMessage" class="hidden bg-red-500/20 border border-red-500/40 text-red-400 text-[10px] p-2 rounded-lg"></div>
-
-                    <button onclick="validateAndSubmitOrder()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-check"></i> အော်ဒါအတည်ပြုမည်
+                    <!-- Zoom Button / Indicator -->
+                    <button onclick="toggleImageZoom()" class="absolute bottom-2 right-2 bg-slate-800/80 hover:bg-slate-700 text-white p-2 rounded-lg text-xs shadow backdrop-blur transition" title="ပုံကို မြင်ကွင်းကျယ်ကြည့်ရန်">
+                        <i class="fa-solid fa-magnifying-glass-plus" id="zoomIcon"></i>
                     </button>
                 </div>
+
+                <!-- Product Name & Price Info -->
+                <div class="w-full space-y-1 text-left pt-1">
+                    <h3 id="modalItemName" class="text-sm font-bold text-white">ပစ္စည်းအမည်</h3>
+                    <p id="modalItemPrice" class="text-base font-bold text-emerald-400">0 Ks</p>
+                </div>
+
+                <button onclick="closeItemModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl text-xs transition shadow">
+                    ပိတ်မည်
+                </button>
             </div>
         </div>
 
@@ -168,6 +155,7 @@
         let items = [];
         let selectedCategory = 'All';
         let activeItem = null;
+        let isZoomed = false;
         let lastNotifiedOrderIds = JSON.parse(localStorage.getItem('notified_orders') || '[]');
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -204,20 +192,17 @@
             });
         }
 
-        // Admin မှ အော်ဒါအတည်ပြုလိုက်သည်ကို စောင့်ကြည့်ရန် Real-time Listener
         function initOrderRealtimeListener() {
             db.collection("customerOrders").onSnapshot((snapshot) => {
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === "modified") {
                         const data = change.doc.data();
                         const orderId = change.doc.id;
-                        // အကယ်၍ အခြေအနေက Approved ဖြစ်သွားပြီး ယခင်က အသိပေးပြီးသား မဟုတ်လျှင်
                         if (data.status === "Approved" && !lastNotifiedOrderIds.includes(orderId)) {
                             showNotificationToast(`အော်ဒါ (${data.itemName}) ကို ဆိုင်မှ အတည်ပြုလက်ခံလိုက်ပါပြီ။`);
                             lastNotifiedOrderIds.push(orderId);
                             localStorage.setItem('notified_orders', JSON.stringify(lastNotifiedOrderIds));
                             
-                            // အကယ်၍ My Orders ဖွင့်ထားလျှင် စာရင်းကိုပါ Update လုပ်ပေးမည်
                             const searchPhone = document.getElementById('searchPhoneInput').value.trim();
                             if(searchPhone && searchPhone === data.customerPhone) {
                                 fetchMyOrders();
@@ -279,6 +264,7 @@
             `).join('');
         }
 
+        // ပစ္စည်းပုံကို နှိပ်လိုက်သောအခါ Zoom မြင်ကွင်းကျယ်နှင့် ပုံအကြောင်းအရာ/ဈေးနှုန်းပြသရန်
         function openItemModal(itemId) {
             activeItem = items.find(i => i.id === itemId);
             if(!activeItem) return;
@@ -289,16 +275,13 @@
             
             const imgContainer = document.getElementById('modalItemImgContainer');
             if(activeItem.image) {
-                imgContainer.innerHTML = `<img src="${activeItem.image}" class="max-w-full max-h-full object-contain">`;
+                imgContainer.innerHTML = `<img id="zoomableImg" src="${activeItem.image}" class="max-w-full max-h-full object-contain transition-transform duration-300">`;
             } else {
-                imgContainer.innerHTML = `<i class="fa-solid fa-image text-3xl text-slate-700"></i>`;
+                imgContainer.innerHTML = `<i class="fa-solid fa-image text-4xl text-slate-700"></i>`;
             }
 
-            document.getElementById('orderQty').value = 1;
-            document.getElementById('orderCustName').value = '';
-            document.getElementById('orderCustPhone').value = '';
-            document.getElementById('orderCustAddress').value = '';
-            document.getElementById('errorMessage').classList.add('hidden');
+            isZoomed = false;
+            document.getElementById('zoomIcon').className = "fa-solid fa-magnifying-glass-plus";
 
             const modal = document.getElementById('itemDetailModal');
             modal.classList.remove('hidden');
@@ -311,83 +294,20 @@
             activeItem = null;
         }
 
-        async function validateAndSubmitOrder() {
-            const name = document.getElementById('orderCustName').value.trim();
-            const phone = document.getElementById('orderCustPhone').value.trim();
-            const address = document.getElementById('orderCustAddress').value.trim();
-            const qty = parseInt(document.getElementById('orderQty').value) || 1;
-            const errorBox = document.getElementById('errorMessage');
+        // ပုံကို ဇူးမ်ဆွဲ / မြင်ကွင်းကျယ် ပြုလုပ်သည့် ဖန်ရှင်
+        function toggleImageZoom() {
+            const img = document.getElementById('zoomableImg');
+            const icon = document.getElementById('zoomIcon');
+            if(!img) return;
 
-            errorBox.classList.add('hidden');
-
-            if (!name || !phone || !address) {
-                showError("ကျေးဇူးပြု၍ အမည်၊ ဖုန်းနံပါတ်နှင့် နေရပ်လိပ်စာ အပြည့်အစုံ ဖြည့်သွင်းပါ။");
-                return;
+            isZoomed = !isZoomed;
+            if(isZoomed) {
+                img.style.transform = "scale(1.8)";
+                icon.className = "fa-solid fa-magnifying-glass-minus";
+            } else {
+                img.style.transform = "scale(1)";
+                icon.className = "fa-solid fa-magnifying-glass-plus";
             }
-
-            const phoneRegex = /^(09|\+959)\d{7,9}$/;
-            if (!phoneRegex.test(phone)) {
-                showError("ထည့်သွင်းထားသော ဖုန်းနံပါတ် မမှန်ကန်ပါ။ (ဥပမာ - 09XXXXXXXXX)");
-                return;
-            }
-
-            if (address.length < 10) {
-                showError("နေရပ်လိပ်စာ အချက်အလက် အလွန်တိုနေပါသည်။ အိမ်နံပါတ်၊ လမ်းနှင့် မြို့နယ်အမည် အပြည့်အစုံ ထည့်ပါ။");
-                return;
-            }
-
-            try {
-                const isValidAddress = await verifyAddressWithGoogleMaps(address);
-                if (!isValidAddress) {
-                    showError("ဖြည့်စုံထားသော နေရပ်လိပ်စာကို Google Maps တွင် ရှာမတွေ့ပါ။ ကျေးဇူးပြု၍ လိပ်စာကို သေချာစွာ ပြန်လည်စစ်ဆေးပါ။");
-                    return;
-                }
-            } catch (e) {
-                console.warn("Maps API check skipped:", e);
-            }
-
-            const orderData = {
-                customerName: name,
-                customerPhone: phone,
-                customerAddress: address,
-                itemName: activeItem.name,
-                qty: qty,
-                totalPrice: activeItem.price * qty,
-                currency: "Ks",
-                date: new Date().toISOString().split('T')[0],
-                status: "Pending", // Pending သို့မဟုတ် Approved
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            db.collection("customerOrders").add(orderData).then(() => {
-                alert('အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ ဆိုင်မှ အမြန်ဆုံး ဆက်သွယ်ပေးပါမည်။');
-                closeItemModal();
-            }).catch(error => {
-                console.error("Order error: ", error);
-                showError("အော်ဒါတင်ရာတွင် အမှားအယွင်းရှိပါသည်။");
-            });
-        }
-
-        async function verifyAddressWithGoogleMaps(address) {
-            const encodedAddress = encodeURIComponent(address + ", Myanmar");
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=AIzaSyDyjFwJDMSviMlSdDZF4K12Sji_yHkpXDE`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.status === "OK" && data.results.length > 0) {
-                    return true;
-                }
-                return false;
-            } catch (err) {
-                return true;
-            }
-        }
-
-        function showError(msg) {
-            const errorBox = document.getElementById('errorMessage');
-            errorBox.innerText = msg;
-            errorBox.classList.remove('hidden');
         }
 
         // My Orders Modal Control
